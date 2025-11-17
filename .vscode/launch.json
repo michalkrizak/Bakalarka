@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/micha/michal.krizak/skola/bakalarka/Bakalarka/BachelorPracticeThesis/SourceCodes",
-      "program": "c:/Users/micha/michal.krizak/skola/bakalarka/Bakalarka/BachelorPracticeThesis/SourceCodes/build/Debug/outDebug",
+      "cwd": "c:/Users/micha/michal.krizak/skola/bakalarka/Bakalarka/BachelorPracticeThesis",
+      "program": "c:/Users/micha/michal.krizak/skola/bakalarka/Bakalarka/BachelorPracticeThesis/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
