@@ -58,13 +58,10 @@
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "latex-workshop.latex.rootFile.doNotPrompt": true,
   "latex-workshop.latex.rootFile.useSubFile": false,
-  "latex-workshop.latex.outDir": "%DIR%",
-  "latex-workshop.latex.search.rootFiles.include": [
-    "BachelorPracticeThesis/BachelorPracticeThesis.tex"
-  ],
+  "latex-workshop.latex.recipe.default": "pdflatex ➞ biber ➞ pdflatex × 2",
   "latex-workshop.latex.recipes": [
     {
-      "name": "pdflatex -> biber -> pdflatex*2",
+      "name": "pdflatex ➞ biber ➞ pdflatex × 2",
       "tools": [
         "pdflatex",
         "biber",
@@ -91,5 +88,30 @@
         "%DOCFILE%"
       ]
     }
+  ],
+  "latex-workshop.latex.clean.method": "glob",
+  "latex-workshop.latex.clean.fileTypes": [
+    "*.aux",
+    "*.bbl",
+    "*.blg",
+    "*.idx",
+    "*.ind",
+    "*.lof",
+    "*.lot",
+    "*.out",
+    "*.toc",
+    "*.acn",
+    "*.acr",
+    "*.alg",
+    "*.glg",
+    "*.glo",
+    "*.gls",
+    "*.ist",
+    "*.fls",
+    "*.log",
+    "*.fdb_latexmk",
+    "*.bcf",
+    "*.run.xml",
+    "*.synctex.gz"
   ]
 }
