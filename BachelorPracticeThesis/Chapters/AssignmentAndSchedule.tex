@@ -1,0 +1,52 @@
+\chapter{Zadání a harmonogram praxe}
+\label{chap:assignment_schedule}
+
+Tato kapitola detailně specifikuje zadané úkoly, které byly předmětem odborné praxe, a popisuje časový harmonogram jejich plnění. Práce byla rozdělena do tří hlavních oblastí: vývoj nového modulu Importér, údržba a rozvoj stávajícího frontendu (včetně implementace AI) a tvorba automatizovaných testů.
+
+\section{Specifikace zadaných úkolů}
+
+\subsection{Projekt Importér}
+Hlavním úkolem praxe byl vývoj webového rozhraní pro import dat do systému Evolio. Původní řešení, realizované jako desktopová aplikace (WPF), se v průběhu času ukázalo jako uživatelsky nepřívětivé a složité na pochopení. Jeho obsluhu zvládali pouze zaškolení firemní konzultanti, což bránilo běžným uživatelům v samostatné práci.
+
+Cílem nového řešení (Single Page Application v Angularu) bylo vytvořit intuitivní nástroj, který umožní každému uživateli bez problémů importovat data samostatně. Jednalo se o vývoj zcela nové komponenty bez návaznosti na existující frontendový kód.
+
+\textbf{Klíčové požadavky:}
+\begin{itemize}
+    \item \textbf{Intuitivní UX/UI:} Důraz na jednoduchost, aby uživatelé mohli sami importovat entity jako jsou advokátní a realitní spisy, pohledávky, subjekty (klienti, protistrany), platby a finanční položky.
+    \item \textbf{Implementace designu:} Kódování aplikace podle dodaných grafických návrhů s možností vlastních vylepšení (např. implementace skeleton loadingů pro lepší odezvu aplikace).
+    \item \textbf{Backend a Databáze:} Spolupráce na návrhu databázových struktur a vývoj C\# doplňku (Add-in) pro zpracování dat.
+\end{itemize}
+
+\subsection{Vývoj AI rozhraní a řešení FE issues}
+Druhou oblastí byla práce na stávajícím frontendu systému Evolio. Nejvýznamnějším úkolem v této části byla implementace uživatelského rozhraní pro AI asistenta.
+
+\textbf{Specifika AI modulu:}
+\begin{itemize}
+    \item Vývoj frontendu pro chatovací okno s podporou výběru jazykového modelu.
+    \item Komunikace s backendem prostřednictvím REST API a \textbf{Notification Hubu} pro real-time streamování odpovědí od AI.
+    \item Implementace funkce pro nahrávání a analýzu dokumentů, což byla klíčová funkce vyžadovaná klienty pro právní analýzy.
+\end{itemize}
+
+Kromě toho jsem se podílel na řešení běžných chyb (bugfixů) a drobných úprav v systému dle požadavků klientů.
+
+\subsection{Automatizované testování}
+Třetím pilířem praxe byla tvorba automatizovaných testů pomocí frameworku \textbf{Selenium}. Cílem bylo zajistit stabilitu klíčových částí systému Evolio. Testy pokrývají základní CRUD operace (Create, Read, Update, Delete) pro moduly:
+\begin{itemize}
+    \item Podatelna,
+    \item Fakturace,
+    \item Správa případů a spisů,
+    \item Evidence subjektů a plateb.
+\end{itemize}
+
+\section{Časový plán a náročnost}
+
+Odborná praxe byla zahájena v srpnu 2025 a probíhá kontinuálně až do současnosti. Práce na jednotlivých úkolech neprobíhala striktně lineárně, ale prolínala se podle aktuálních priorit vývojového týmu.
+
+\textbf{Přibližné rozložení časové dotace:}
+\begin{itemize}
+    \item \textbf{60 \%} – Vývoj modulu Importér (FE + Add-in).
+    \item \textbf{20 \%} – Implementace AI rozhraní a řešení FE issues.
+    \item \textbf{20 \%} – Tvorba automatizovaných testů a ostatní činnosti.
+\end{itemize}
+
+Vývoj Importéru začal implementací frontendu. Práce na backendové části (C\# Add-in) byla zahájena později, jakmile byla klientská část dostatečně připravena pro integraci. Následně probíhal vývoj obou částí souběžně.

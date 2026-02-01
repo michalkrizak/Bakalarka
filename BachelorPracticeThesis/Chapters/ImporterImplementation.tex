@@ -1,0 +1,111 @@
+\chapter{Realizace projektu Importér}
+\label{chap:importer_implementation}
+
+Tato kapitola popisuje technickou realizaci klíčové části odborné praxe – modulu Importér. Řešení je rozděleno do tří vrstev: databázové, aplikační (backend) a prezentační (frontend).
+
+\section{Analýza a návrh databáze}
+
+Databázová vrstva je implementována na platformě Microsoft SQL Server pod vyhrazeným schématem \texttt{importer}. Architektura byla navržena s důrazem na konfigurovatelnost, což umožňuje definovat nové typy importů bez nutnosti zásahů do zkompilovaného kódu aplikace.
+
+Model dat se skládá ze tří logických celků:
+\begin{enumerate}
+    \item \textbf{Definice struktury:} Metadara popisující, jaká data lze importovat (kontexty, sloupce).
+    \item \textbf{Konfigurace šablon:} Uložení uživatelských nastavení a mapování.
+    \item \textbf{Provozní data:} Logování průběhu importu a auditní stopy.
+\end{enumerate}
+
+\subsection{Klíčové entity a vztahy}
+
+Základním stavebním kamenem je tabulka \texttt{CTypy}, která slouží jako kořenový číselník pro logickou separaci dat (např. subjekty, případy, dokumenty). Na ni navazuje hierarchická struktura definovaná v tabulce \texttt{Kontext}.
+
+\begin{figure}[h]
+    \centering
+    % ZDE VLOZIT OBRAZEK ER DIAGRAMU (napr. export z SQL Management Studia nebo Enterprise Architect)
+    % Soubor musi byt ve slozce Figures, napr. Figures/ERD_Importer.png
+    \includegraphics[width=1\textwidth]{Figures/ERD_Importer.jpg} % Docasny placeholder
+    \caption{Zjednodušený ER diagram databázového schématu Importer}
+    \label{fig:erd_diagram}
+\end{figure}
+
+Významným prvkem návrhu je rekurzivní vazba v tabulce \texttt{Kontext}. Sloupec \texttt{IdKontextNadrizeny} odkazuje zpět na stejnou tabulku, což umožňuje modelovat vnořené objekty (např. Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontaktní údaj).
+
+\subsection{Optimalizace a datové typy}
+Při návrhu byly využity pokročilé vlastnosti SQL Serveru pro zajištění výkonu:
+
+\begin{itemize}
+    \item \textbf{Clustered indexy:} Primární klíče jsou implementovány jako klastrované indexy pro efektivní fyzické uspořádání dat.
+    \item \textbf{Filtered indexy:} Například na sloupci \texttt{SysBatchId} je použit index s podmínkou \texttt{WHERE IS NOT NULL}, což optimalizuje dotazy na konkrétní dávky dat a šetří místo na disku.
+    \item \textbf{JSON podpora:} Pro ukládání variabilních struktur (např. \texttt{PodminkyZobrazeni}) je využit datový typ \texttt{nvarchar(max)} s ukládáním dat ve formátu JSON.
+\end{itemize}
+
+\section{Serverová část a aplikační logika}
+
+Backendová část řešení je implementována v jazyce C\# jako tzv. \textbf{Service Fabric Actor} v rámci platformy EFabric. Jedná se o mikroslužbu běžící v prostředí Microsoft Azure.
+
+\subsection{Komunikace se systémem Evolio}
+Propojení s jádrem systému zajišťuje třída \texttt{ImporterContext}, která dědí z \texttt{EMapContext}. Tento mechanismus zajišťuje sdílení bezpečnostního kontextu a jazykových nastavení.
+
+Inicializace služby využívá Dependency Injection, kde je kontext vytvářen na základě bezpečnostního tiketu:
+
+\begin{lstlisting}[language={[Sharp]C}, caption={Konfigurace ImporterContextu}]
+public class ImporterContext : EMapContext
+{
+    public ImporterContext(string address, string securityContext, string language = "cs") 
+        : base(address, securityContext, language)
+    { }
+}
+\end{lstlisting}
+
+\subsection{Zpracování importu}
+Samotný proces importu probíhá ve dvou fázích. Nejprve dochází k validaci a přípravě dat (metoda \texttt{CreateImportAsync}), která vrací unikátní \texttt{ImportId}. Následně je volána metoda \texttt{DirectImportAsync}, která provede fyzický zápis do cílových tabulek systému Evolio.
+
+Tato metoda komunikuje s REST API endpointem:
+\texttt{api/import/v5/DirectImport?ImportId=\{importId\}}.
+
+\section{Uživatelské rozhraní (Frontend)}
+
+Prezentační vrstva je vytvořena jako Single Page Application (SPA) v frameworku \textbf{Angular} s využitím jazyka TypeScript. Aplikace je členěna do modulů, přičemž hlavní logiku zapouzdřuje \texttt{importer.module.ts}.
+
+\subsection{Architektura komponent}
+Frontend využívá hierarchickou dekompozici na "chytré" (smart) a "hloupé" (dumb) komponenty:
+
+\begin{itemize}
+    \item \textbf{ImporterDetailComponent:} Dashboard zobrazující historii importů a výběr šablon.
+    \item \textbf{ImporterMappingComponent:} Komplexní rozhraní pro mapování sloupců z Excelu na databázové sloupce.
+    \item \textbf{ValueMappingModalComponent:} Modální okno pro transformaci hodnot (např. mapování textu "SRO" na číselníkovou hodnotu "Společnost s ručením omezeným").
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    % ZDE VLOZIT SCREENSHOT DASHBOARDU
+    \includegraphics[width=0.9\textwidth]{Figures/importer_dashboard.jpg} % Docasny placeholder
+    \caption{Dashboard aplikace Importér s výběrem šablon}
+    \label{fig:importer_dashboard}
+\end{figure}
+
+\subsection{Optimalizace výkonu a UX}
+Vzhledem k práci s velkým objemem dat byly implementovány pokročilé techniky pro zajištění plynulosti aplikace.
+
+\subsubsection{Paralelní načítání dat}
+Pro zrychlení inicializace aplikace je využito operátoru \texttt{forkJoin} z knihovny RxJS, který umožňuje paralelní stažení šablon, typů a logů v jednom okamžiku:
+
+\begin{lstlisting}[language=Java, caption={Paralelní načítání dat pomocí forkJoin}]
+forkJoin({
+  sablony: this.emap.get('importSablony', ...),
+  typy: this.emap.get('cTypy', ...),
+  logy: this.emap.get('logy', ...)
+}).subscribe(...)
+\end{lstlisting}
+
+\subsubsection{Správa paměti}
+Pro prevenci úniků paměti (memory leaks) je v komponentách důsledně aplikován \texttt{takeUntil} pattern. Ten zajišťuje automatické odhlášení (unsubscribe) od asynchronních proudů dat při zániku komponenty (\texttt{ngOnDestroy}).
+
+\begin{figure}[h]
+    \centering
+    % ZDE VLOZIT SCREENSHOT MAPOVACI OBRAZOVKY
+    \includegraphics[width=0.9\textwidth]{Figures/mapping_screen.png} % Docasny placeholder
+    \caption{Rozhraní pro mapování sloupců z Excelu}
+    \label{fig:mapping_screen}
+\end{figure}
+
+Z pohledu User Experience (UX) byly implementovány \textbf{skeleton loadingy}, které nahrazují klasické načítací indikátory (spinnery). Uživatel tak okamžitě vidí strukturu stránky ještě před načtením dat, což subjektivně zrychluje odezvu aplikace.
