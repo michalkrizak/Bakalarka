@@ -1,0 +1,69 @@
+\chapter{Automatizované testování}
+\label{chap:testing}
+
+Pro zajištění kvality a stability systému Evolio, a zejména nově vyvíjených modulů, byla v rámci praxe realizována sada automatizovaných UI testů. Tyto testy simulují reálné chování uživatele v prohlížeči a slouží jako regresní testování po nasazení nové verze aplikace.
+
+\section{Strategie a nástroje}
+
+Jako technologický základ byl zvolen framework **Selenium WebDriver**, který je v .NET prostředí standardem pro automatizaci webových prohlížečů. Pro samotné spouštění testů a validaci podmínek (assertions) je využit framework **NUnit** (atributy \texttt{[Test]}, \texttt{[SetUp]}).
+
+\subsection{Architektura Screenplay Pattern}
+Na rozdíl od tradičního přístupu Page Object Model (POM) využívá tento projekt modernější návrhový vzor **Screenplay Pattern**, implementovaný pomocí knihovny \textbf{Boa.Constrictor}. Tento přístup se zaměřuje na to, co uživatel (Actor) dělá, spíše než na strukturu stránek.
+
+Základní stavební kameny architektury jsou:
+\begin{itemize}
+    \item \textbf{Actor (Tester):} Entita provádějící test. V našem případě je instanciována v \texttt{BaseTest} třídě.
+    \item \textbf{Task:} Složitější úloha skládající se z více kroků (např. \texttt{Login.WithSessionCredentials()}).
+    \item \textbf{Interaction:} Atomická akce (např. \texttt{Click.On(...)}, \texttt{SendKeys.To(...)}).
+    \item \textbf{Question:} Dotaz na stav aplikace (např. \texttt{Appearance.Of(...)}, \texttt{ValueAttribute.Of(...)}).
+\end{itemize}
+
+\section{Implementace testovacích scénářů}
+
+Testy jsou organizovány do logických celků podle agend (Podatelna, Případy, Subjekty). Následující ukázka demonstruje strukturu CRUD testu pro vytvoření nového subjektu.
+
+\subsection{Příklad: Vytvoření subjektu}
+Testovací metoda dodržuje princip \textbf{Arrange-Act-Assert}. Využívá fluent syntaxi, která činí test čitelným téměř jako přirozený jazyk.
+
+\begin{lstlisting}[language={[Sharp]C}, caption={Ukázka testu vytvoření subjektu pomocí Screenplay patternu}]
+[Test]
+public void CreateSubject_Manually_ShouldSucceed()
+{
+    // Arrange: Příprava dat
+    string name = "Testovací Subjekt " + Guid.NewGuid();
+    string ico = "12345678";
+
+    // Act: Provedení akcí (Navigace -> Vyplnění formuláře -> Uložení)
+    Tester.AttemptsTo(Navigate.ToUrl(SubjectPage.Url));
+    Tester.AttemptsTo(Click.On(SubjectPage.AddButton));
+    
+    Tester.AttemptsTo(SendKeys.To(SubjectForm.NameInput, name));
+    Tester.AttemptsTo(SendKeys.To(SubjectForm.IcoInput, ico));
+    
+    Tester.AttemptsTo(Click.On(SubjectForm.SaveButton));
+
+    // Assert: Ověření výsledku
+    // Čekáme, až se objeví notifikace o úspěchu
+    Tester.WaitsUntil(Appearance.Of(SubjectPage.SuccessToast), IsEqualTo.True());
+    
+    // Ověření, že se subjekt načetl v detailu
+    Tester.AskingFor(Text.Of(SubjectPage.DetailHeader)).Should().Contain(name);
+}
+\end{lstlisting}
+
+\section{Integrace do CI/CD (Azure DevOps)}
+
+Nedílnou součástí mé práce byla integrace těchto testů do procesu kontinuální integrace a nasazování (CI/CD) na platformě \textbf{Azure DevOps}.
+
+\subsection{Spouštění testů}
+Vytvořil a spravoval jsem buildovací a release pipeliny, které automaticky spouští sadu testů po každém nasazení nové verze do testovacího prostředí. Testy běží na vzdáleném virtuálním stroji v prohlížeči Google Chrome.
+
+\subsection{Diagnostika chyb}
+Pro efektivní řešení problémů je implementován mechanismus, který v případě pádu testu:
+\begin{enumerate}
+    \item Automaticky pořídí \textbf{screenshot} obrazovky v momentě chyby.
+    \item Uloží systémové logy a stack trace.
+    \item Tyto artefakty připojí k výsledku testu v Azure DevOps Dashboardu.
+\end{enumerate}
+
+Tato automatizace výrazně zrychluje proces debugování, protože umožňuje okamžitě identifikovat, zda chyba nastala v aplikaci (např. validační hláška) nebo v testu samotném.

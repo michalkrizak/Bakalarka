@@ -1,0 +1,72 @@
+\chapter{Vývoj AI rozhraní a řešení FE issues}
+\label{chap:fe_issues_ai}
+
+Vedle hlavního projektu Importér byla významná část kapacity věnována práci na klientských požadavcích a údržbě existujících systémů. Tato kapitola popisuje vývoj specializovaného AI modulu a řešení specifických chyb v uživatelském rozhraní.
+
+\section{Implementace AI asistenta v prostředí AngularJS}
+
+Jedním z nejnáročnějších úkolů byl vývoj inteligentního chatu pro specifického klienta, jehož informační systém je postaven na starší technologii \textbf{AngularJS (v1.x)}. Cílem bylo integrovat moderní jazykové modely (LLM) do tohoto prostředí a umožnit uživatelům nejen konverzaci, ale i analýzu nahraných dokumentů.
+
+\subsection{Architektura a komunikace v reálném čase}
+Vzhledem k požadavku na plynulé zobrazování odpovědi (podobně jako v ChatGPT) nebylo možné čekat na vygenerování celé odpovědi na serveru. Řešení využívá technologii \textbf{SignalR} a Azure Notification Hub pro streamování jednotlivých tokenů textu v reálném čase.
+
+Datový tok je následující:
+\begin{enumerate}
+    \item Frontend odešle HTTP POST požadavek s dotazem a ID vybraného modelu.
+    \item Backend zahájí komunikaci s AI API (např. OpenAI/Azure).
+    \item Jakmile AI generuje text, backend posílá jednotlivé fragmenty (chunks) přes SignalR Hub zpět na klienta.
+    \item Frontend naslouchá na eventu \texttt{openAIStream} a postupně skládá odpověď.
+\end{enumerate}
+
+\begin{lstlisting}[language=Java, caption={Zpracování streamované odpovědi v AngularJS}]
+// Naslouchání na SignalR notifikace
+hub.on('openAIStream', function(message) {
+    $rootScope.$broadcast('openAIStream', message);
+});
+
+// Skládání zprávy v kontroleru
+$scope.$on('openAIStream', function(event, chunk) {
+    // Přidání nového tokenu k existujícímu textu
+    $scope.streamingMessage.text += chunk;
+    
+    // Vynucení překreslení UI (AngularJS digest cycle)
+    if (!$scope.$$phase) $scope.$apply();
+});
+\end{lstlisting}
+
+\subsection{Práce s dokumenty a formátování}
+Klíčovým požadavkem byla analýza právních dokumentů. Před odesláním dotazu probíhá asynchronní upload souborů, které jsou na backendu převedeny do formátu vhodného pro LLM kontext.
+
+Pro správné zobrazení strukturovaného textu (odrážky, tučné písmo, kód) byla využita knihovna \textbf{marked.js}, která v reálném čase převádí Markdown syntaxi na HTML.
+
+\section{Řešení chyb v uživatelském rozhraní (Bugfixing)}
+
+Nedílnou součástí praxe byla analýza a opravy chyb v systému Evolio. Příkladem komplexního problému byla chyba v komponentě Přehledy (založené na knihovně DevExpress), kde docházelo k selhání načítání filtrů.
+
+\subsection{Analýza problému: Konflikt seskupování a ukotvení}
+Uživatelé hlásili, že u určitých pohledů v tabulce se nenačítá kontextové menu pro filtrování. Debugováním bylo zjištěno, že problém nastává v momentě, kdy je sloupec nastaven jako \textbf{ukotvený} (Fixed) a zároveň se podle něj \textbf{seskupuje} (Grouped).
+
+Komponenta DevExpress v této specifické konfiguraci nedokázala správně vypočítat pozici elementů, což vedlo k chybě v konzoli a znefunkčnění ovládacích prvků.
+
+\subsection{Implementace opravy}
+Oprava spočívala v úpravě logiky, která generuje konfiguraci pro sloupce tabulky. Bylo nutné zajistit, aby se vlastnost \texttt{fixed} automaticky deaktivovala, pokud je sloupec použit pro seskupování.
+
+\begin{lstlisting}[language=Java, caption={Oprava konfliktu vlastností Fixed a Grouped}]
+// Původní problematický kód
+// fixedPosition: colcf.fixed !== null ? colcf.fixed.toLowerCase() : null,
+// fixed: colcf.fixed !== null,
+
+// Nová logika s ošetřením konfliktu
+const isFixed = colcf.fixed !== null && 
+                colcf.fixed.toLowerCase() !== 'none' && 
+                !colcf.grouped; // Klicova podminka: nesmi byt seskupeno
+
+// Aplikace do konfigurace
+const columnConfig = {
+    // ... ostatní vlastnosti
+    fixedPosition: isFixed ? colcf.fixed.toLowerCase() : null,
+    fixed: isFixed
+};
+\end{lstlisting}
+
+Tato úprava zajistila stabilitu komponenty i v případě, že uživatel (nebo uložený pohled) definoval tuto konfliktní kombinaci vlastností.
