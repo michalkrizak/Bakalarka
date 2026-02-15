@@ -1,0 +1,17 @@
+\chapter{Zhodnocení výsledků a přínos praxe}
+\label{chap:evaluation}
+
+Cílem praxe bylo nejen zapojení do běžného chodu firmy, ale především dodání konkrétních softwarových řešení. Níže uvádím aktuální stav jednotlivých projektů.
+
+\section{Modul Importér}
+V době psaní této zprávy se nová webová verze Importéru nachází ve fázi \textbf{intenzivního testování}. Aplikace je plně funkční a probíhají konzultace s Team Leaderem a Product Ownerem ohledně doladění vizuálních detailů a user experience (UX).
+
+Do testování jsou zapojeni také firemní konzultanti, kteří budou systém v budoucnu nejvíce využívat. Jejich zpětná vazba slouží k identifikaci posledních nedostatků před nasazením do ostrého provozu pro všechny klienty.
+
+\section{AI Rozhraní}
+Modul AI chatu pro specifického klienta byl úspěšně dokončen, nasazen do produkčního prostředí a je klientem aktivně využíván. Řešení splnilo požadavky na analýzu dokumentů a streamovanou komunikaci, přičemž klient vyjádřil s výsledkem spokojenost.
+
+\section{Automatizované testy}
+Sada automatizovaných testů byla integrována do CI/CD pipeliny a spouští se s každým vydáním nové verze. Testy již prokázaly svou reálnou hodnotu při odhalování regresních chyb.
+
+Konkrétním příkladem úspěšného záchytu chyby byla situace, kdy testy odhalily nefunkčnost modálního okna pro editaci případu, pokud neobsahoval žádné subjekty. Chyba způsobovala "nekonečné načítání" a zablokování formuláře. Díky automatizaci byla tato kritická chyba zachycena ještě před nasazením k zákazníkům.
