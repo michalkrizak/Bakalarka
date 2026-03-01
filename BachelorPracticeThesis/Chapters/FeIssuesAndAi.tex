@@ -5,10 +5,21 @@ Vedle hlavního projektu Importér byla významná část kapacity věnována pr
 
 \section{Implementace AI asistenta v prostředí AngularJS}
 
-Jedním z nejnáročnějších úkolů byl vývoj inteligentního chatu pro specifického klienta, jehož informační systém je postaven na starší technologii \textbf{AngularJS (v1.x)}. Cílem bylo integrovat moderní jazykové modely (LLM) do tohoto prostředí a umožnit uživatelům nejen konverzaci, ale i analýzu nahraných dokumentů.
+Jedním z nejnáročnějších úkolů byl vývoj inteligentního chatu pro specifického klienta, jehož informační systém je postaven na starší technologii \textbf{AngularJS (v1.x)} \cite{angularjs_docs}. Cílem bylo integrovat moderní jazykové modely (LLM) do tohoto prostředí a umožnit uživatelům nejen konverzaci, ale i analýzu nahraných dokumentů.
+
+\begin{figure}[h]
+    \centering
+    % Nezapomeň pak přepsat název souboru na svůj, např. AiSablony.png
+    \includegraphics[width=0.9\textwidth]{Figures/AI-new_chat.png} 
+    \caption{Výchozí rozhraní AI asistenta s nabídkou předdefinovaných šablon}
+    \label{fig:ai_templates}
+\end{figure}
 
 \subsection{Architektura a komunikace v reálném čase}
-Vzhledem k požadavku na plynulé zobrazování odpovědi (podobně jako v ChatGPT) nebylo možné čekat na vygenerování celé odpovědi na serveru. Řešení využívá technologii \textbf{SignalR} a Azure Notification Hub pro streamování jednotlivých tokenů textu v reálném čase.
+
+
+
+Vzhledem k požadavku na plynulé zobrazování odpovědi (podobně jako v ChatGPT) nebylo možné čekat na vygenerování celé odpovědi na serveru. Řešení využívá technologii \textbf{SignalR} \cite{signalr_docs} a Azure Notification Hub pro streamování jednotlivých tokenů textu v reálném čase.
 
 Datový tok je následující:
 \begin{enumerate}
@@ -39,9 +50,17 @@ Klíčovým požadavkem byla analýza právních dokumentů. Před odesláním d
 
 Pro správné zobrazení strukturovaného textu (odrážky, tučné písmo, kód) byla využita knihovna \textbf{marked.js}, která v reálném čase převádí Markdown syntaxi na HTML.
 
+\begin{figure}[h]
+    \centering
+    % Nezapomeň pak přepsat název souboru na svůj, např. AiKonverzace.png
+    \includegraphics[width=0.9\textwidth]{Figures/AI-existing_chat.png} 
+    \caption{Ukázka probíhající konverzace s formátováním textu a analýzou dokumentu}
+    \label{fig:ai_conversation}
+\end{figure}
+
 \section{Řešení chyb v uživatelském rozhraní (Bugfixing)}
 
-Nedílnou součástí praxe byla analýza a opravy chyb v systému Evolio. Příkladem komplexního problému byla chyba v komponentě Přehledy (založené na knihovně DevExpress), kde docházelo k selhání načítání filtrů.
+Nedílnou součástí praxe byla analýza a opravy chyb v systému Evolio. Příkladem komplexního problému byla chyba v komponentě Přehledy (založené na knihovně DevExpress \cite{devexpress_docs}), kde docházelo k selhání načítání filtrů.
 
 \subsection{Analýza problému: Konflikt seskupování a ukotvení}
 Uživatelé hlásili, že u určitých pohledů v tabulce se nenačítá kontextové menu pro filtrování. Debugováním bylo zjištěno, že problém nastává v momentě, kdy je sloupec nastaven jako \textbf{ukotvený} (Fixed) a zároveň se podle něj \textbf{seskupuje} (Grouped).

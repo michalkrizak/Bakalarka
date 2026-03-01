@@ -7,6 +7,8 @@
 \usepackage{subfig} % makra pro "podobrazky" a "podtabulky"
 \usepackage[cpp]{diplomalst}
 
+\renewcommand{\lstlistlistingname}{Seznam použitých kódů}
+
 % Zadame pozadovane vstupy pro generovani titulnich stran.
 \ThesisAuthor{Michal Křižák}
 
@@ -35,6 +37,7 @@ The thesis focuses on the implementation of the user interface using Angular tec
 
 \EnglishKeywords{Professional practice; AveSoft; IS Evolio; Angular; TypeScript; C\#; SQL; automated tests; software migration; web application}
 
+% ... tvoje stávající zkratky ...
 \AddAcronym{IS}{Informační systém}
 \AddAcronym{WPF}{Windows Presentation Foundation}
 \AddAcronym{SPA}{Single Page Application}
@@ -48,8 +51,21 @@ The thesis focuses on the implementation of the user interface using Angular tec
 \AddAcronym{CSS}{Cascading Style Sheets}
 \AddAcronym{GIT}{Distribuovaný systém správy verzí}
 
-\addbibresource{biblatex-examples.bib}
-\addbibresource{coffee.bib}
+% --- NOVÉ ZKRATKY K PŘIDÁNÍ ---
+\AddAcronym{AI}{Artificial Intelligence (Umělá inteligence)}
+\AddAcronym{LLM}{Large Language Model (Velký jazykový model)}
+\AddAcronym{UX}{User Experience (Uživatelský prožitek)}
+\AddAcronym{CI/CD}{Continuous Integration / Continuous Deployment (Průběžná integrace a nasazování)}
+\AddAcronym{JSON}{JavaScript Object Notation}
+\AddAcronym{HTTP}{Hypertext Transfer Protocol}
+\AddAcronym{CRUD}{Create, Read, Update, Delete (Základní databázové operace)}
+\AddAcronym{RxJS}{Reactive Extensions for JavaScript}
+\AddAcronym{POM}{Page Object Model}
+\AddAcronym{ERD}{Entity-Relationship Diagram}
+
+%\addbibresource{biblatex-examples.bib}
+%\addbibresource{coffee.bib}
+\addbibresource{literatura.bib}
 
 % Novy druh tabulkoveho sloupce, ve kterem jsou cisla zarovnana podle desetinne carky
 \newcolumntype{d}[1]{D{,}{,}{#1}}
@@ -71,8 +87,12 @@ The thesis focuses on the implementation of the user interface using Angular tec
 \listoftables
 \clearpage
 
+% Vypíše seznam všech kódů (lstlisting) použitých v práci
+\lstlistoflistings
+\clearpage
+
 % A nasleduje text zaverecne prace.
-\input{Chapters/Introduction.tex}
+%\input{Chapters/Introduction.tex}
 \input{Chapters/CompanyProfile.tex}
 \input{Chapters/AssignmentAndSchedule.tex}
 \input{Chapters/ImporterImplementation.tex}
@@ -88,21 +108,21 @@ The thesis focuses on the implementation of the user interface using Angular tec
 
 
 
-\input{Chapters/SampleChapter1.tex}
-\input{Chapters/SampleChapter2.tex}
-\input{Chapters/TechnicalDetails.tex}
-\input{Chapters/Conclusion.tex}
+%\input{Chapters/SampleChapter1.tex}
+%\input{Chapters/SampleChapter2.tex}
+%\input{Chapters/TechnicalDetails.tex}
+%\input{Chapters/Conclusion.tex}
 
 % Seznam literatury
 \printbibliography[title={Literatura}, heading=bibintoc]
 
 % Prilohy
 \appendix
-\input{Chapters/Appendix1.tex}
-\input{Chapters/Appendix2.tex}
+%\input{Chapters/Appendix1.tex}
+%\input{Chapters/Appendix2.tex}
 
 % Priloha vlozena primo do hlavniho LaTeX souboru. Ne vsechny prilohy je nutne mit ve zvlastnich souborech.
-\chapter{Dlouhý zdrojový kód}
-\lstinputlisting[label=src:CppExternal,caption={Dlouhý zdrojový kód v jazyce C++ načtený s externího souboru}]{SourceCodes/ArraySortingAlgorithms.cpp}
+%\chapter{Dlouhý zdrojový kód}
+%\lstinputlisting[label=src:CppExternal,caption={Dlouhý zdrojový kód v jazyce C++ načtený s externího souboru}]{SourceCodes/ArraySortingAlgorithms.cpp}
 
 \end{document}
