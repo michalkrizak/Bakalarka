@@ -34,7 +34,7 @@ Při návrhu byly využity pokročilé vlastnosti SQL Serveru pro zajištění v
 
 \begin{itemize}
     \item \textbf{Clustered indexy:} Primární klíče jsou implementovány jako klastrované indexy pro efektivní fyzické uspořádání dat.
-    \item \textbf{Filtered indexy:} Například na sloupci \texttt{SysBatchId} je použit index s podmínkou \texttt{WHERE IS NOT NULL}, což optimalizuje dotazy na konkrétní dávky dat a šetří místo na disku.
+   % \item \textbf{Filtered indexy:} Například na sloupci \texttt{SysBatchId} je použit index s podmínkou \texttt{WHERE IS NOT NULL}, což optimalizuje dotazy na konkrétní dávky dat a šetří místo na disku.
     \item \textbf{JSON podpora:} Pro ukládání variabilních struktur (např. \texttt{PodminkyZobrazeni}) je využit datový typ \texttt{nvarchar(max)} s ukládáním dat ve formátu JSON.
 \end{itemize}
 
