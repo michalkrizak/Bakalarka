@@ -16,96 +16,113 @@ Model dat se skládá ze tří logických celků:
 
 \subsection{Klíčové entity a vztahy}
 
-Základním stavebním kamenem je tabulka \texttt{CTypy}, která slouží jako kořenový číselník pro logickou separaci dat (např. subjekty, případy, dokumenty). Na ni navazuje hierarchická struktura definovaná v tabulce \texttt{Kontext}.
+Základním stavebním kamenem je tabulka \texttt{CTypy}, která slouží jako kořenový číselník pro logickou separaci dat. Na ni navazuje hierarchická struktura definovaná v tabulce \texttt{Kontext}. Významným prvkem návrhu je rekurzivní vazba v tabulce \texttt{Kontext} přes sloupec \texttt{IdKontextNadrizeny}, což umožňuje modelovat vnořené objekty (např. Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontakt).
 
 \begin{figure}[h]
     \centering
-    % ZDE VLOZIT OBRAZEK ER DIAGRAMU (napr. export z SQL Management Studia nebo Enterprise Architect)
-    % Soubor musi byt ve slozce Figures, napr. Figures/ERD_Importer.png
-    \includegraphics[width=1\textwidth]{Figures/ERD_Importer.jpg} % Docasny placeholder
+    \includegraphics[width=0.8\textwidth]{Figures/ERD_Importer.png}
     \caption{Zjednodušený ER diagram databázového schématu Importer}
     \label{fig:erd_diagram}
 \end{figure}
 
-Významným prvkem návrhu je rekurzivní vazba v tabulce \texttt{Kontext}. Sloupec \texttt{IdKontextNadrizeny} odkazuje zpět na stejnou tabulku, což umožňuje modelovat vnořené objekty (např. Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontaktní údaj).
-
-\subsection{Optimalizace a datové typy}
-Při návrhu byly využity pokročilé vlastnosti SQL Serveru pro zajištění výkonu:
-
-\begin{itemize}
-    \item \textbf{Clustered indexy:} Primární klíče jsou implementovány jako klastrované indexy pro efektivní fyzické uspořádání dat.
-   % \item \textbf{Filtered indexy:} Například na sloupci \texttt{SysBatchId} je použit index s podmínkou \texttt{WHERE IS NOT NULL}, což optimalizuje dotazy na konkrétní dávky dat a šetří místo na disku.
-    \item \textbf{JSON podpora:} Pro ukládání variabilních struktur (např. \texttt{PodminkyZobrazeni}) je využit datový typ \texttt{nvarchar(max)} s ukládáním dat ve formátu JSON.
-\end{itemize}
-
 \section{Serverová část a aplikační logika}
 
-Backendová část řešení je implementována v jazyce C\# jako tzv. \textbf{Service Fabric Actor} \cite{microsoft_servicefabric} v rámci platformy EFabric. Jedná se o mikroslužbu běžící v prostředí Microsoft Azure.
+Backendová část řešení je implementována v jazyce C\# \cite{csharp_docs} jako \textbf{Service Fabric Actor} v rámci platformy EFabric. Jedná se o mikroslužbu běžící v prostředí Microsoft Azure \cite{microsoft_servicefabric}.
 
-\subsection{Komunikace se systémem Evolio}
-Propojení s jádrem systému zajišťuje třída \texttt{ImporterContext}, která dědí z \texttt{EMapContext}. Tento mechanismus zajišťuje sdílení bezpečnostního kontextu a jazykových nastavení.
-
-Inicializace služby využívá Dependency Injection, kde je kontext vytvářen na základě bezpečnostního tiketu:
-
-\begin{lstlisting}[language={[Sharp]C}, caption={Konfigurace ImporterContextu}]
-public class ImporterContext : EMapContext
-{
-    public ImporterContext(string address, string securityContext, string language = "cs") 
-        : base(address, securityContext, language)
-    { }
-}
-\end{lstlisting}
-
-\subsection{Zpracování importu}
-Samotný proces importu probíhá ve dvou fázích. Nejprve dochází k validaci a přípravě dat (metoda \texttt{CreateImportAsync}), která vrací unikátní \texttt{ImportId}. Následně je volána metoda \texttt{DirectImportAsync}, která provede fyzický zápis do cílových tabulek systému Evolio.
-
-Tato metoda komunikuje s REST API endpointem:
-\texttt{api/import/v5/DirectImport?ImportId=\{importId\}}.
+Propojení s jádrem systému zajišťuje třída \texttt{ImporterContext}, která dědí z \texttt{EMapContext}. Samotný proces importu probíhá asynchronně ve dvou fázích: nejprve validace a příprava dat (\texttt{CreateImportAsync}) a následně fyzický zápis do cílových tabulek (\texttt{DirectImportAsync}).
 
 \section{Uživatelské rozhraní (Frontend)}
 
-Prezentační vrstva je vytvořena jako Single Page Application (SPA) v frameworku \textbf{Angular} \cite{angular_docs} s využitím jazyka TypeScript \cite{typescript_docs}. Aplikace je členěna do modulů, přičemž hlavní logiku zapouzdřuje \texttt{importer.module.ts}.
+Prezentační vrstva modulu Importér představuje nejrozsáhlejší část realizace. Je navržena jako autonomní feature modul (\texttt{ImporterModule}) v rámci enterprise architektury systému Evolio, využívající verzi \textbf{Angular 17} \cite{angular_docs} a \textbf{TypeScript} \cite{typescript_docs}.
 
-\subsection{Architektura komponent}
-Frontend využívá hierarchickou dekompozici na "chytré" (smart) a "hloupé" (dumb) komponenty:
+\subsection{Architektura a hierarchie komponent}
 
-\begin{itemize}
-    \item \textbf{ImporterDetailComponent:} Dashboard zobrazující historii importů a výběr šablon.
-    \item \textbf{ImporterMappingComponent:} Komplexní rozhraní pro mapování sloupců z Excelu na databázové sloupce.
-    \item \textbf{ValueMappingModalComponent:} Modální okno pro transformaci hodnot (např. mapování textu "SRO" na číselníkovou hodnotu "Společnost s ručením omezeným").
-\end{itemize}
+Modul je dekomponován na osm specializovaných komponent, které spolupracují na zajištění plynulého uživatelského zážitku při zpracování dat. Využití komponentového přístupu umožňuje oddělit logiku zobrazení od orchestrace dat. Detailní přehled všech komponent uvádí tabulka \ref{tab:fe_components_full}.
 
-\begin{figure}[h]
+
+
+\begin{table}[h]
+\centering
+\caption{Kompletní přehled komponent modulu Importér}
+\label{tab:fe_components_full}
+\begin{tabular}{|l|p{9cm}|}
+\hline
+\textbf{Komponenta} & \textbf{Účel a hlavní funkce} \\ \hline
+\texttt{ImporterDetailComponent} & Hlavní dashboard. Zobrazuje typy importů, historii logů a náhled dat ze souboru. \\ \hline
+\texttt{ImporterMappingComponent} & Klíčová obrazovka pro definici mapování sloupců Excelu na kontexty systému. \\ \hline
+\texttt{ContextTreeComponent} & Rekurzivní komponenta pro vizualizaci a navigaci v hierarchickém stromu kontextů. \\ \hline
+\texttt{ImporterDropdownComponent} & Specializovaný výběrový prvek pro intuitivní přiřazování sloupců k atributům. \\ \hline
+\texttt{ValueMappingModalComponent} & Dialog pro definici transformací hodnot (např. převod textových stavů na číselné ID). \\ \hline
+\texttt{DocumentPickerButtonComponent} & Prvek pro nahrávání souborů s podporou validace přípon a velikosti. \\ \hline
+\texttt{ImportProgressDialogComponent} & Sleduje průběh importu po řádcích v reálném čase s vizualizací úspěšnosti. \\ \hline
+\texttt{ImportLogDetailComponent} & Detailní prohlížeč výsledků a chybových zpráv z proběhlých importů. \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
     \centering
-    % ZDE VLOZIT SCREENSHOT DASHBOARDU
-    \includegraphics[width=0.9\textwidth]{Figures/importer_dashboard.jpg} % Docasny placeholder
-    \caption{Dashboard aplikace Importér s výběrem šablon}
-    \label{fig:importer_dashboard}
+    \includegraphics[width=1\textwidth]{Figures/diagram.png}
+    \caption{Sekvenční diagram procesu zpracování importu po jednotlivých řádcích}
+    \label{fig:import_sequence}
 \end{figure}
 
-\subsection{Optimalizace výkonu a UX}
-Vzhledem k práci s velkým objemem dat byly implementovány pokročilé techniky pro zajištění plynulosti aplikace.
+\subsection{Moderní reaktivní vzory: Signály a RxJS}
 
-\subsubsection{Paralelní načítání dat}
-Pro zrychlení inicializace aplikace je využito operátoru \texttt{forkJoin} z knihovny RxJS \cite{rxjs_docs}, který umožňuje paralelní stažení šablon, typů a logů v jednom okamžiku:
+Aplikace využívá kombinaci tradiční knihovny RxJS \cite{rxjs_docs} a nového reaktivního primitiva \textbf{Signals}, představeného v Angularu 17. Signály jsou použity pro správu synchronního stavu, který nevyžaduje komplexní transformace, což zjednodušuje kód a zvyšuje čitelnost.
 
-\begin{lstlisting}[language=Java, caption={Paralelní načítání dat pomocí forkJoin}]
-forkJoin({
-  sablony: this.emap.get('importSablony', ...),
-  typy: this.emap.get('cTypy', ...),
-  logy: this.emap.get('logy', ...)
-}).subscribe(...)
+V rámci \texttt{ImporterService} jsou signály využity pro sledování aktuálního kontextu:
+\begin{lstlisting}[language=Java, caption={Využití signálů pro správu stavu modulu}]
+// Definice signálu pro sledování vybrané šablony
+public selectedSablonaId = signal<number | null>(null);
+
+// Výpočetní signál závislý na změně ID
+public isSablonaSelected = computed(() => this.selectedSablonaId() !== null);
 \end{lstlisting}
 
-\subsubsection{Správa paměti}
-Pro prevenci úniků paměti (memory leaks) je v komponentách důsledně aplikován \texttt{takeUntil} pattern. Ten zajišťuje automatické odhlášení (unsubscribe) od asynchronních proudů dat při zániku komponenty (\texttt{ngOnDestroy}).
+Pro asynchronní operace, jako je paralelní načítání číselníků při inicializaci, je nadále využíváno RxJS. Operátor \texttt{forkJoin} zajišťuje, že se aplikace vykreslí až v momentě, kdy jsou k dispozici všechna potřebná metadata:
 
-\begin{figure}[h]
-    \centering
-    % ZDE VLOZIT SCREENSHOT MAPOVACI OBRAZOVKY
-    \includegraphics[width=0.9\textwidth]{Figures/mapping_screen.png} % Docasny placeholder
-    \caption{Rozhraní pro mapování sloupců z Excelu}
-    \label{fig:mapping_screen}
-\end{figure}
+\begin{lstlisting}[language=Java, caption={Paralelní inicializace dat pomocí forkJoin}]
+forkJoin({
+  typy: this.emap.get('cTypy', { IdTyp: this.idTyp() }),
+  kontexty: this.emap.get('kontext', { IdTyp: this.idTyp() }),
+  sablony: this.emap.get('importSablony', { IdTyp: this.idTyp() })
+}).pipe(takeUntil(this.destroy$)).subscribe(data => {
+  this.state.update(s => ({ ...s, ...data }));
+});
+\end{lstlisting}
 
-Z pohledu User Experience (UX) byly implementovány \textbf{skeleton loadingy}, které nahrazují klasické načítací indikátory (spinnery). Uživatel tak okamžitě vidí strukturu stránky ještě před načtením dat, což subjektivně zrychluje odezvu aplikace.
+\subsection{Optimalizace výkonu pomocí OnPush strategie}
+
+Z důvodu vysokých nároků na výkon při zobrazování rozsáhlých mapovacích struktur (stromy s desítkami uzlů) byla u všech komponent nasazena strategie \textbf{ChangeDetectionStrategy.OnPush}. 
+
+Tato optimalizace instruuje Angular, aby kontčistých rouroloval změny v komponentě pouze v případě, že se změní její vstupní reference (\texttt{@Input}) nebo je změna explicitně vyžádána. Tím se výrazně redukuje počet cyklů detekce změn při interakci uživatele s formulářem.
+
+\begin{lstlisting}[language=Java, caption={Definice komponenty s OnPush strategií}]
+@Component({
+  selector: 'ev-importer-mapping',
+  templateUrl: './importer-mapping.component.html',
+  styleUrls: ['./importer-mapping.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ImporterMappingComponent { ... }
+\end{lstlisting}
+
+\subsection{Implementace komplexní mapovací logiky}
+
+Jádrem modulu je \texttt{ImporterMappingComponent}, která umožňuje uživateli interaktivně sestavit strukturu importu. Na rozdíl od původního desktopového řešení se zde uplatňuje princip \textit{on-demand} budování struktury:
+
+\begin{itemize}
+    \item \textbf{Dynamické instance:} Uživatel může přidávat více instancí stejného kontextu (např. více adres k jednomu subjektu). Každá instance má vlastní stav mapování sloupců.
+    \item \textbf{Interaktivní správa:} Stav sbalení a rozbalení jednotlivých sekcí je udržován v \texttt{Set<string>}, což zajišťuje rychlou manipulaci i při velkém počtu prvků.
+    \item \textbf{Datová transformace:} Pomocí \textit{pure pipes} dochází k transformaci dat bez nutnosti přepočítávání při každém cyklu detekce změn.
+\end{itemize}
+
+\subsection{Real-time monitoring a UX prvky}
+
+Proces importu probíhá sekvenčně, přičemž uživatel je o postupu informován prostřednictvím \texttt{ImportProgressDialogComponent}. Tato komponenta kombinuje několik technologií pro zajištění plynulé zpětné vazby:
+
+\begin{itemize}
+    \item \textbf{Sledování času:} Využití knihovny \textit{moment.js} v sekundovém intervalu pro zobrazení doby trvání importu.
+    \item \textbf{Inkrementální DataGrid:} Výsledky jsou do tabulky (\textit{DevExtreme DataGrid}) přidávány okamžitě po dokončení požadavku na konkrétní řádek.
+    \item \textbf{Vizuální indikátory:} Namísto statických spinnerů jsou v dashboardu využity \textbf{skeleton loadingy}, které predikují strukturu obsahu a snižují kognitivní zátěž uživatele při čekání na data.
+\end{itemize}
