@@ -18,18 +18,94 @@ Model dat se skládá ze tří logických celků:
 
 Základním stavebním kamenem je tabulka \texttt{CTypy}, která slouží jako kořenový číselník pro logickou separaci dat. Na ni navazuje hierarchická struktura definovaná v tabulce \texttt{Kontext}. Významným prvkem návrhu je rekurzivní vazba v tabulce \texttt{Kontext} přes sloupec \texttt{IdKontextNadrizeny}, což umožňuje modelovat vnořené objekty (např. Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontakt).
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{Figures/ERD_Importer.png}
     \caption{Zjednodušený ER diagram databázového schématu Importer}
     \label{fig:erd_diagram}
 \end{figure}
 
-\section{Serverová část a aplikační logika}
 
-Backendová část řešení je implementována v jazyce C\# \cite{csharp_docs} jako \textbf{Service Fabric Actor} v rámci platformy EFabric. Jedná se o mikroslužbu běžící v prostředí Microsoft Azure \cite{microsoft_servicefabric}.
+\section{Serverová část a aplikační logika (Add-in)}
 
-Propojení s jádrem systému zajišťuje třída \texttt{ImporterContext}, která dědí z \texttt{EMapContext}. Samotný proces importu probíhá asynchronně ve dvou fázích: nejprve validace a příprava dat (\texttt{CreateImportAsync}) a následně fyzický zápis do cílových tabulek (\texttt{DirectImportAsync}).
+Serverová část modulu Importér je implementována v jazyce C\# jako komponenta systému EFabric. Hlavním úkolem této vrstvy je orchestrace datového toku mezi uživatelským rozhraním, interním API systému Evolio a SQL databází. Logika je rozdělena do dvou funkčních celků (Add-inů), které zajišťují oddělení přípravné a realizační fáze importu.
+
+\subsection{Procesní flow: Od validace k ostrému zápisu}
+
+Zpracování importu probíhá dvoufázově. Tento přístup umožňuje uživateli zkontrolovat připravená data a odhalit případné chyby dříve, než dojde k nevratnému zápisu do produkčních tabulek systému. Porovnání parametrů a chování těchto fází uvádí tabulka \ref{tab:be_comparison}.
+
+\begin{table}[H]
+\centering
+\caption{Srovnání fází PrepareImport a DirectImport}
+\label{tab:be_comparison}
+\begin{tabular}{|l|p{5.5cm}|p{5.5cm}|}
+\hline
+\textbf{Vlastnost} & \textbf{Fáze PrepareImport} & \textbf{Fáze DirectImport} \\ \hline
+\textbf{Účel} & Parsování souboru a příprava dat v logu. & Ostrý zápis dat do cílových entit systému. \\ \hline
+\textbf{Hlavní parametr} & \texttt{PouzeUlozit = true}. & \texttt{ImportId} (získané z přípravy). \\ \hline
+\textbf{Zpracování} & Hromadné pro celý soubor. & Sekvenční po jednotlivých položkách. \\ \hline
+\textbf{API Endpoint} & \texttt{/api/import/v5/pripady/}. & \texttt{api/import/v5/DirectImport}. \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Fáze 1: Příprava importu (PrepareImport)}
+V první fázi odesílá frontend metadata o souboru a zvolenou šablonu mapování. Backend volá standardní importní API systému Evolio s parametrem \texttt{PouzeUlozit = true}. Systém v tomto režimu neprovádí zápis do ostrých agend, ale parsuje vstupní Excel/CSV soubor, provádí validace a výsledná data ukládá do dočasných tabulek logu (\texttt{Logy} a \texttt{LogyPolozky}). Výsledkem tohoto volání je unikátní identifikátor \texttt{IdLogSeq} (nebo \texttt{ImportId}), který slouží jako klíč pro následné kroky.
+
+\subsubsection{Fáze 2: Ostrý import (DirectImport)}
+Jakmile uživatel potvrdí správnost připravených dat, frontend zahájí sekvenční zpracování položek. Pro každou platnou položku je vyvolána metoda \texttt{DirectImportAsync}, která využívá dříve získaný identifikátor. Tato fáze volá stejné API rozhraní, ale tentokrát pro finální uložení do databáze.
+
+\begin{lstlisting}[language={[Sharp]C}, caption={Implementace metody pro provedení ostrého importu}]
+// Metoda zajistuje finalni zapis dat do systemu Evolio
+public async Task DirectImportAsync(Guid importId)
+{
+    // Sestaveni URL adresy pro konkretni ImportId
+    var url = string.Format("api/import/v5/DirectImport?ImportId={0}", importId);
+    
+    // Odeslani POST pozadavku na API. 
+    // V teto fazi dojde k fyzickemu vlozeni dat do SQL tabulek systemu.
+    await Context.Post(url, string.Empty, CancellationToken.None);
+}
+\end{lstlisting}
+
+\subsection{Implementace databázové logiky (SQL Procedura)}
+
+Pro zajištění konzistence a výkonu při aktualizaci stavů importu využívá backend uloženou proceduru \texttt{ImporterUpdateLogyPolozkySp}. Tato procedura atomicky aktualizuje stav řádku a v případě dokončení celé dávky provádí finalizaci logu.
+
+\begin{lstlisting}[language=SQL, caption={Uložená procedura pro aktualizaci stavu položek}]
+CREATE PROCEDURE [importer].[ImporterUpdateLogyPolozkySp]
+    @SysRowid [core].[SysRowIdType], -- ID radku v tabulce LogyPolozky
+    @Stav nvarchar(255),            -- S (Success) / EC (Error)
+    @Popis nvarchar(255) = null     -- Detailni chybova zprava
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @IdTyp INT, @IdSablonaSeq INT, @IdLogSeq INT;
+
+    -- 1. Aktualizace stavu konkretni polozky
+    UPDATE importer.LogyPolozky
+    SET Stav = @Stav,
+        Popis = @Popis
+    WHERE SysRowId = @SysRowid;
+
+    -- 2. Kontrola koncovych stavu a aktualizace celkoveho logu
+    IF(@Stav = 'S' OR @Stav = 'EC')
+    BEGIN
+        SELECT @IdTyp = IdTyp, @IdSablonaSeq = IdSablonaSeq, @IdLogSeq = IdLogSeq
+        FROM importer.LogyPolozky WHERE SysRowId = @SysRowid;
+
+        -- Overeni, zda jsou jiz vsechny polozky v davce dokoncene
+        IF(NOT EXISTS(SELECT 1 FROM importer.LogyPolozky l 
+                      WHERE l.IdLogSeq = @IdLogSeq AND l.Stav IN ('N','R')))
+        BEGIN
+            -- Finalizace celeho importniho logu
+            UPDATE importer.Logy SET Stav = 'D' WHERE IdLogSeq = @IdLogSeq;
+        END
+    END
+END
+\end{lstlisting}
+
+Využití této procedury umožňuje backendu efektivně sledovat průběh importu a okamžitě reagovat na výsledky vracené z API. Pokud API vrátí chybu pro konkrétní řádek, backend zavolá proceduru se stavem \texttt{'EC'} a popisem chyby, což se ihned promítne do uživatelského rozhraní v reálném čase.
+
 
 \section{Uživatelské rozhraní (Frontend)}
 
