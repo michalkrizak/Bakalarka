@@ -171,7 +171,7 @@ forkJoin({
 
 Z důvodu vysokých nároků na výkon při zobrazování rozsáhlých mapovacích struktur (stromy s desítkami uzlů) byla u všech komponent nasazena strategie \textbf{ChangeDetectionStrategy.OnPush}. 
 
-Tato optimalizace instruuje Angular, aby kontčistých rouroloval změny v komponentě pouze v případě, že se změní její vstupní reference (\texttt{@Input}) nebo je změna explicitně vyžádána. Tím se výrazně redukuje počet cyklů detekce změn při interakci uživatele s formulářem.
+Tato optimalizace instruuje Angular, aby kontroloval změny v komponentě pouze v případě, že se změní její vstupní reference (\texttt{@Input}) nebo je změna explicitně vyžádána. Tím se výrazně redukuje počet cyklů detekce změn při interakci uživatele s formulářem.
 
 \begin{lstlisting}[language=Java, caption={Definice komponenty s OnPush strategií}]
 @Component({
