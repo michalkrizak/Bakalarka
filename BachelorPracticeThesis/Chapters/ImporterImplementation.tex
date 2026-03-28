@@ -25,6 +25,23 @@ Základním stavebním kamenem je tabulka \texttt{CTypy}, která slouží jako k
     \label{fig:erd_diagram}
 \end{figure}
 
+\subsection{Systémová infrastruktura a auditování}
+Všechny tabulky v rámci schématu \texttt{importer} sdílejí jednotnou sadu systémových sloupců, které zajišťují auditní stopu a integritu dat. Mezi tyto sloupce patří identifikátory autora záznamu (\texttt{SysZadal}), časové značky a sloupec \texttt{SysRowVersion} sloužící k optimistickému řízení souběhu. 
+
+
+\subsection{Logické celky datového modelu}
+Na základě funkčnosti lze datový model rozdělit do několika klíčových oblastí, které společně zajišťují flexibilitu celého importního modulu.
+
+\subsubsection{Definice hierarchie a struktury}
+Základem pro definici toho, co lze do systému importovat, jsou tabulky \texttt{CTypy}, \texttt{Kontext} a \texttt{KontextSloupce}.
+\begin{itemize}
+    \item \textbf{CTypy:} Slouží jako kořenový číselník a diskriminátor pro logickou separaci různých domén importu (např. spisy, subjekty či dokumenty).
+    \item \textbf{Kontext:} Realizuje stromovou strukturu entit. Využití rekurzivní vazby \texttt{IdKontextNadrizeny} umožňuje modelovat libovolně hluboké vnořené struktury (např. vazbu Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontakt). Tato rekurzivní asociace je pro daný účel vhodnější než alternativní přístupy (např. materialized path), jelikož umožňuje efektivní manipulaci s uzly při zachování referenční integrity na úrovni databázového stroje.
+    \item \textbf{KontextSloupce:} Nese metadata o jednotlivých polích v rámci kontextu. Kromě datového typu obsahuje také identifikátor UI komponenty, což umožňuje dynamické vykreslování odpovídajících prvků (např. dropdown, datepicker) v prezentační vrstvě aplikace.
+\end{itemize}
+
+\subsubsection{Konfigurace šablon a mapování}
+Procesní nastavení a propojení vstupních dat s vnitřní strukturou systému zajišťují entity \texttt{ImportSablony} a \texttt{SablonyMapovaniSloupcu}. Šablony uchovávají parametry jako režim dávkového zpracování nebo kritéria pro párování existujících subjektů. Tabulka \texttt{SablonyMapovaniSloupcu} pak funguje jako komplexní asociační entita, která propojuje tři nezávislé hierarchie: strukturu kontextů, zdrojové sloupce vstupního souboru a konkrétní výskyty kontextů v šabloně. Podporuje definici statických hodnot i pokročilé transformační logiky uložené v JSON formátu. Jejím hlavním úkolem je uložit stav šablony, tedy uchovat všechny její kontexty a sloupce, díky čemuž můžeme do databáze uložit kompletní informaci o hierarchii celé šablony.
 
 \section{Serverová část a aplikační logika (Add-in)}
 
@@ -109,38 +126,49 @@ Využití této procedury umožňuje backendu efektivně sledovat průběh impor
 
 \section{Uživatelské rozhraní (Frontend)}
 
+\subsection{Motivace a porovnání s původním řešením}
+
+Původní modul pro import dat v systému Evolio byl realizován jako desktopová aplikace (WPF). Toto řešení bylo v průběhu let shledáno jako vysoce neintuitivní a pro běžného uživatele bez předchozího proškolení prakticky nepoužitelné (viz Obrázek \ref{fig:old_importer}). Obsluhu tohoto nástroje zvládali pouze interní firemní konzultanti.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/old_importer.png}
+    \caption{Ukázka rozhraní původního desktopového modulu (neintuitivní a složité). V rozbaleném dropdownu lze vidět entity, které jsou pro běžného uživatele nicneříkající.}
+    \label{fig:old_importer}
+\end{figure}
+
+Hlavním cílem vývoje nové webové Single Page Aplikace (SPA) bylo vytvořit moderní a intuitivní nástroj, který umožní klientům provádět importy dat zcela samostatně.
+
 Prezentační vrstva modulu Importér představuje nejrozsáhlejší část realizace. Je navržena jako autonomní feature modul (\texttt{ImporterModule}) v rámci enterprise architektury systému Evolio, využívající verzi \textbf{Angular 17} \cite{angular_docs} a \textbf{TypeScript} \cite{typescript_docs}.
 
 \subsection{Architektura a hierarchie komponent}
 
-Modul je dekomponován na osm specializovaných komponent, které spolupracují na zajištění plynulého uživatelského zážitku při zpracování dat. Využití komponentového přístupu umožňuje oddělit logiku zobrazení od orchestrace dat. Detailní přehled všech komponent uvádí tabulka \ref{tab:fe_components_full}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Figures/importer_dashboard.png}
+    \caption{Dashboard nového modulu Importér se seznamem náhledem dokumentu a výběrem šablony}
+    \label{fig:importer_dashboard}
+\end{figure}
 
+Modul sestává z osmi specializovaných komponent, které spolupracují na zajištění plynulého uživatelského zážitku. Přehled všech komponent uvádí tabulka \ref{tab:fe_components_full}.
 
-
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{Kompletní přehled komponent modulu Importér}
 \label{tab:fe_components_full}
 \begin{tabular}{|l|p{9cm}|}
 \hline
 \textbf{Komponenta} & \textbf{Účel a hlavní funkce} \\ \hline
-\texttt{ImporterDetailComponent} & Hlavní dashboard. Zobrazuje typy importů, historii logů a náhled dat ze souboru. \\ \hline
-\texttt{ImporterMappingComponent} & Klíčová obrazovka pro definici mapování sloupců Excelu na kontexty systému. \\ \hline
-\texttt{ContextTreeComponent} & Rekurzivní komponenta pro vizualizaci a navigaci v hierarchickém stromu kontextů. \\ \hline
-\texttt{ImporterDropdownComponent} & Specializovaný výběrový prvek pro intuitivní přiřazování sloupců k atributům. \\ \hline
-\texttt{ValueMappingModalComponent} & Dialog pro definici transformací hodnot (např. převod textových stavů na číselné ID). \\ \hline
-\texttt{DocumentPickerButtonComponent} & Prvek pro nahrávání souborů s podporou validace přípon a velikosti. \\ \hline
-\texttt{ImportProgressDialogComponent} & Sleduje průběh importu po řádcích v reálném čase s vizualizací úspěšnosti. \\ \hline
-\texttt{ImportLogDetailComponent} & Detailní prohlížeč výsledků a chybových zpráv z proběhlých importů. \\ \hline
+\texttt{ImporterDetailComponent} & Hlavní dashboard modulu s historií a náhledem. \\ \hline
+\texttt{ImporterMappingComponent} & Obrazovka pro definici mapování sloupců na kontexty. \\ \hline
+\texttt{ContextTreeComponent} & Rekurzivní komponenta pro vizualizaci stromu kontextů. \\ \hline
+\texttt{ImporterDropdownComponent} & Výběrový prvek pro intuitivní přiřazování sloupců. \\ \hline
+\texttt{ValueMappingModalComponent} & Dialog pro definici transformací hodnot (převod textů na ID). \\ \hline
+\texttt{DocumentPickerButtonComponent} & Prvek pro nahrávání souborů s podporou validace. \\ \hline
+\texttt{ImportProgressDialogComponent} & Sleduje průběh importu po řádcích v reálném čase. \\ \hline
+\texttt{ImportLogDetailComponent} & Detailní prohlížeč výsledků a chyb z proběhlých importů. \\ \hline
 \end{tabular}
 \end{table}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{Figures/diagram.png}
-    \caption{Sekvenční diagram procesu zpracování importu po jednotlivých řádcích}
-    \label{fig:import_sequence}
-\end{figure}
 
 \subsection{Moderní reaktivní vzory: Signály a RxJS}
 
@@ -185,13 +213,20 @@ export class ImporterMappingComponent { ... }
 
 \subsection{Implementace komplexní mapovací logiky}
 
-Jádrem modulu je \texttt{ImporterMappingComponent}, která umožňuje uživateli interaktivně sestavit strukturu importu. Na rozdíl od původního desktopového řešení se zde uplatňuje princip \textit{on-demand} budování struktury:
+Jádrem modulu je \texttt{ImporterMappingComponent} (viz Obrázek \ref{fig:importer_mapping}), která umožňuje uživateli interaktivně sestavit strukturu importu. Na rozdíl od původního desktopového řešení se zde uplatňuje princip \textit{on-demand} budování struktury:
 
 \begin{itemize}
     \item \textbf{Dynamické instance:} Uživatel může přidávat více instancí stejného kontextu (např. více adres k jednomu subjektu). Každá instance má vlastní stav mapování sloupců.
     \item \textbf{Interaktivní správa:} Stav sbalení a rozbalení jednotlivých sekcí je udržován v \texttt{Set<string>}, což zajišťuje rychlou manipulaci i při velkém počtu prvků.
     \item \textbf{Datová transformace:} Pomocí \textit{pure pipes} dochází k transformaci dat bez nutnosti přepočítávání při každém cyklu detekce změn.
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Figures/importer_mapping.png}
+    \caption{Nové rozhraní pro interaktivní konfiguraci mapování sloupců}
+    \label{fig:importer_mapping}
+\end{figure}
 
 \subsection{Real-time monitoring a UX prvky}
 
@@ -202,3 +237,10 @@ Proces importu probíhá sekvenčně, přičemž uživatel je o postupu informov
     \item \textbf{Inkrementální DataGrid:} Výsledky jsou do tabulky (\textit{DevExtreme DataGrid}) přidávány okamžitě po dokončení požadavku na konkrétní řádek.
     \item \textbf{Vizuální indikátory:} Namísto statických spinnerů jsou v dashboardu využity \textbf{skeleton loadingy}, které predikují strukturu obsahu a snižují kognitivní zátěž uživatele při čekání na data.
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Figures/success_import.png}
+    \caption{Ukázka úspěšného importu}
+    \label{fig:success_import}
+\end{figure}
