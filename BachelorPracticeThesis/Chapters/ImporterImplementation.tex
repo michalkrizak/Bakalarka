@@ -18,11 +18,13 @@ Model dat se skládá ze tří logických celků:
 
 Základním stavebním kamenem je tabulka \texttt{CTypy}, která slouží jako kořenový číselník pro logickou separaci dat. Na ni navazuje hierarchická struktura definovaná v tabulce \texttt{Kontext}. Významným prvkem návrhu je rekurzivní vazba v tabulce \texttt{Kontext} přes sloupec \texttt{IdKontextNadrizeny}, což umožňuje modelovat vnořené objekty (např. Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontakt).
 
-\begin{figure}[H]
+\begin{figure}[p]
+    \vspace*{\fill}
     \centering
-    \includegraphics[width=0.8\textwidth]{Figures/ERD_Importer.png}
+    \includegraphics[width=1\textwidth]{Figures/ERD_Importer.png}
     \caption{Zjednodušený ER diagram databázového schématu Importer}
     \label{fig:erd_diagram}
+    \vspace*{\fill}
 \end{figure}
 
 \subsection{Systémová infrastruktura a auditování}
@@ -170,6 +172,15 @@ Modul sestává z osmi specializovaných komponent, které spolupracují na zaji
 \end{tabular}
 \end{table}
 
+\begin{figure}[p]
+    \vspace*{\fill}
+    \centering
+    \includegraphics[width=1\textwidth]{Figures/diagram.png}
+    \caption{Sekvenční diagram procesu zpracování importu po jednotlivých řádcích}
+    \label{fig:import_sequence}
+    \vspace*{\fill}
+\end{figure}
+
 \subsection{Moderní reaktivní vzory: Signály a RxJS}
 
 Aplikace využívá kombinaci tradiční knihovny RxJS \cite{rxjs_docs} a nového reaktivního primitiva \textbf{Signals}, představeného v Angularu 17. Signály jsou použity pro správu synchronního stavu, který nevyžaduje komplexní transformace, což zjednodušuje kód a zvyšuje čitelnost.
@@ -221,12 +232,14 @@ Jádrem modulu je \texttt{ImporterMappingComponent} (viz Obrázek \ref{fig:impor
     \item \textbf{Datová transformace:} Pomocí \textit{pure pipes} dochází k transformaci dat bez nutnosti přepočítávání při každém cyklu detekce změn.
 \end{itemize}
 
-\begin{figure}[H]
+\clearpage
+\begin{sidewaysfigure}
     \centering
     \includegraphics[width=1\textwidth]{Figures/importer_mapping.png}
     \caption{Nové rozhraní pro interaktivní konfiguraci mapování sloupců}
     \label{fig:importer_mapping}
-\end{figure}
+\end{sidewaysfigure}
+\clearpage
 
 \subsection{Real-time monitoring a UX prvky}
 

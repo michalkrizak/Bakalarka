@@ -9,13 +9,12 @@ Jedním z nejnáročnějších úkolů byl vývoj inteligentního chatu pro spec
 
 Je důležité podotknout, že framework AngularJS je v dnešní době již považován za technologii za hranicí své životnosti (End-of-Life) a v rámci standardních firemních procesů jej pro nové projekty již nevyužíváme. Volba této technologie byla v tomto případě čistě pragmatická a vynucená architekturou stávajícího informačního systému klienta. Cílem bylo vyhovět požadavku na integraci moderních funkcí do již zavedené aplikace a zajistit její další rozvoj bez nutnosti okamžité a nákladné migrace celého systému na modernější platformu.
 
-\begin{figure}[h]
+\begin{sidewaysfigure}
     \centering
-    % Nezapomeň pak přepsat název souboru na svůj, např. AiSablony.png
-    \includegraphics[width=0.9\textwidth]{Figures/AI-new_chat.png} 
+    \includegraphics[width=1\textheight]{Figures/AI-new_chat.png} 
     \caption{Výchozí rozhraní AI asistenta s nabídkou předdefinovaných šablon}
     \label{fig:ai_templates}
-\end{figure}
+\end{sidewaysfigure}
 
 \subsection{Architektura a komunikace v reálném čase}
 
@@ -52,13 +51,12 @@ Klíčovým požadavkem byla analýza právních dokumentů. Před odesláním d
 
 Pro správné zobrazení strukturovaného textu (odrážky, tučné písmo, kód) byla využita knihovna \textbf{marked.js}, která v reálném čase převádí Markdown syntaxi na HTML.
 
-\begin{figure}[h]
+\begin{sidewaysfigure}
     \centering
-    % Nezapomeň pak přepsat název souboru na svůj, např. AiKonverzace.png
-    \includegraphics[width=0.9\textwidth]{Figures/AI-existing_chat.png} 
+    \includegraphics[width=1\textwidth]{Figures/AI-existing_chat.png} 
     \caption{Ukázka probíhající konverzace s formátováním textu a analýzou dokumentu}
     \label{fig:ai_conversation}
-\end{figure}
+\end{sidewaysfigure}
 
 \section{Řešení chyb v uživatelském rozhraní (Bugfixing)}
 
