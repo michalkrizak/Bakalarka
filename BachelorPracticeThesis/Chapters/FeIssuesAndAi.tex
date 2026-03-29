@@ -19,7 +19,6 @@ Je důležité podotknout, že framework AngularJS je v dnešní době již pova
 \subsection{Architektura a komunikace v reálném čase}
 
 
-
 Vzhledem k požadavku na plynulé zobrazování odpovědi (podobně jako v ChatGPT) nebylo možné čekat na vygenerování celé odpovědi na serveru. Řešení využívá technologii \textbf{SignalR} \cite{signalr_docs} a Azure Notification Hub pro streamování jednotlivých tokenů textu v reálném čase.
 
 Datový tok je následující:
@@ -51,12 +50,15 @@ Klíčovým požadavkem byla analýza právních dokumentů. Před odesláním d
 
 Pro správné zobrazení strukturovaného textu (odrážky, tučné písmo, kód) byla využita knihovna \textbf{marked.js}, která v reálném čase převádí Markdown syntaxi na HTML.
 
+\clearpage
 \begin{sidewaysfigure}
     \centering
     \includegraphics[width=1\textwidth]{Figures/AI-existing_chat.png} 
     \caption{Ukázka probíhající konverzace s formátováním textu a analýzou dokumentu}
     \label{fig:ai_conversation}
 \end{sidewaysfigure}
+\clearpage
+
 
 \section{Řešení chyb v uživatelském rozhraní (Bugfixing)}
 
@@ -66,6 +68,13 @@ Nedílnou součástí praxe byla analýza a opravy chyb v systému Evolio. Pří
 Uživatelé hlásili, že u určitých pohledů v tabulce se nenačítá kontextové menu pro filtrování. Debugováním bylo zjištěno, že problém nastává v momentě, kdy je sloupec nastaven jako \textbf{ukotvený} (Fixed) a zároveň se podle něj \textbf{seskupuje} (Grouped).
 
 Komponenta DevExpress v této specifické konfiguraci nedokázala správně vypočítat pozici elementů, což vedlo k chybě v konzoli a znefunkčnění ovládacích prvků.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Figures/gitlab-issue.png} 
+    \caption{Úkázka zadaného issue na gitlabu}
+    \label{fig:gitlab-issue}
+\end{figure}
 
 \subsection{Implementace opravy}
 Oprava spočívala v úpravě logiky, která generuje konfiguraci pro sloupce tabulky. Bylo nutné zajistit, aby se vlastnost \texttt{fixed} automaticky deaktivovala, pokud je sloupec použit pro seskupování.
