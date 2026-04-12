@@ -1,7 +1,7 @@
 \chapter{Vývoj AI rozhraní a řešení FE issues}
 \label{chap:fe_issues_ai}
 
-Vedle hlavního projektu Importér byla významná část kapacity věnována práci na klientských požadavcích a údržbě existujících systémů. Tato kapitola popisuje vývoj specializovaného AI modulu a řešení specifických chyb v uživatelském rozhraní.
+Vedle hlavního projektu Importér byla významná část času věnována práci na klientských požadavcích a údržbě existujících systémů. Tato kapitola popisuje vývoj specializovaného AI modulu a řešení specifických chyb v uživatelském rozhraní.
 
 \section{Implementace AI asistenta v prostředí AngularJS}
 
@@ -65,14 +65,14 @@ Pro správné zobrazení strukturovaného textu (odrážky, tučné písmo, kód
 Nedílnou součástí praxe byla analýza a opravy chyb v systému Evolio. Příkladem komplexního problému byla chyba v komponentě Přehledy (založené na knihovně DevExpress \cite{devexpress_docs}), kde docházelo k selhání načítání filtrů.
 
 \subsection{Analýza problému: Konflikt seskupování a ukotvení}
-Uživatelé hlásili, že u určitých pohledů v tabulce se nenačítá kontextové menu pro filtrování. Debugováním bylo zjištěno, že problém nastává v momentě, kdy je sloupec nastaven jako \textbf{ukotvený} (Fixed) a zároveň se podle něj \textbf{seskupuje} (Grouped).
+Uživatelé hlásili, že u určitých přehledů se nenačetli data v tabulce a došlo k nekonečnému načítání. Debugováním bylo zjištěno, že problém nastává v momentě, kdy je sloupec nastaven jako \textbf{ukotvený} (Fixed) a zároveň se podle něj \textbf{seskupuje} (Grouped).
 
-Komponenta DevExpress v této specifické konfiguraci nedokázala správně vypočítat pozici elementů, což vedlo k chybě v konzoli a znefunkčnění ovládacích prvků.
+Komponenta DevExpress v této specifické konfiguraci nedokázala správně vypočítat pozici elementů, což vedlo k chybě v konzoli a nenačtení dat.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{Figures/gitlab-issue.png} 
-    \caption{Úkázka zadaného issue na gitlabu}
+    \caption{Ukázka zadaného issue na gitlabu}
     \label{fig:gitlab-issue}
 \end{figure}
 
@@ -97,4 +97,4 @@ const columnConfig = {
 };
 \end{lstlisting}
 
-Tato úprava zajistila stabilitu komponenty i v případě, že uživatel (nebo uložený pohled) definoval tuto konfliktní kombinaci vlastností.
+Tato úprava zajistila stabilitu komponenty i v případě, že uživatel (nebo uložený přehled) definoval tuto konfliktní kombinaci vlastností.

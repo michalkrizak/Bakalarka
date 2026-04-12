@@ -38,8 +38,8 @@ Na základě funkčnosti lze datový model rozdělit do několika klíčových o
 Základem pro definici toho, co lze do systému importovat, jsou tabulky \texttt{CTypy}, \texttt{Kontext} a \texttt{KontextSloupce}.
 \begin{itemize}
     \item \textbf{CTypy:} Slouží jako kořenový číselník a diskriminátor pro logickou separaci různých domén importu (např. spisy, subjekty či dokumenty).
-    \item \textbf{Kontext:} Realizuje stromovou strukturu entit. Využití rekurzivní vazby \texttt{IdKontextNadrizeny} umožňuje modelovat libovolně hluboké vnořené struktury (např. vazbu Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontakt). Tato rekurzivní asociace je pro daný účel vhodnější než alternativní přístupy (např. materialized path), jelikož umožňuje efektivní manipulaci s uzly při zachování referenční integrity na úrovni databázového stroje.
-    \item \textbf{KontextSloupce:} Nese metadata o jednotlivých polích v rámci kontextu. Kromě datového typu obsahuje také identifikátor UI komponenty, což umožňuje dynamické vykreslování odpovídajících prvků (např. dropdown, datepicker) v prezentační vrstvě aplikace.
+    \item \textbf{Kontext:} Reprezentuje kategorii importovatelných dat — například Subjekt, Adresa nebo Kontakt. Díky rekurzivní vazbě \texttt{IdKontextNadrizeny} mohou být kontexty vzájemně vnořeny a tvoří tak stromovou strukturu (např. Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontakt). Každý kontext zároveň slouží jako nadřazená kategorie pro svá konkrétní datová pole, která jsou evidována v tabulce \texttt{KontextSloupce}.
+    \item \textbf{KontextSloupce:} Každý záznam v této tabulce představuje jedno konkrétní pole patřící do nadřazeného kontextu — například pole \textit{Jméno} nebo \textit{IČO} v kontextu Subjekt. Kromě datového typu obsahuje také identifikátor UI komponenty, což umožňuje dynamické vykreslování odpovídajících prvků (např. dropdown, datepicker) v prezentační vrstvě aplikace.
 \end{itemize}
 
 \subsubsection{Konfigurace šablon a mapování}
@@ -208,7 +208,7 @@ forkJoin({
 
 \subsection{Optimalizace výkonu pomocí OnPush strategie}
 
-Z důvodu vysokých nároků na výkon při zobrazování rozsáhlých mapovacích struktur (stromy s desítkami uzlů) byla u všech komponent nasazena strategie \textbf{ChangeDetectionStrategy.OnPush}. 
+Z důvodu vysokých nároků na výkon při zobrazování rozsáhlých mapovacích struktur (stromy s desítkami uzlů) byla u všech komponent s vyššími nároky na výkon nasazena strategie \textbf{ChangeDetectionStrategy.OnPush}. 
 
 Tato optimalizace instruuje Angular, aby kontroloval změny v komponentě pouze v případě, že se změní její vstupní reference (\texttt{@Input}) nebo je změna explicitně vyžádána. Tím se výrazně redukuje počet cyklů detekce změn při interakci uživatele s formulářem.
 
@@ -233,12 +233,17 @@ Jádrem modulu je \texttt{ImporterMappingComponent} (viz Obrázek \ref{fig:impor
 \end{itemize}
 
 \clearpage
-\begin{sidewaysfigure}
+\begin{figure}[p]
     \centering
-    \includegraphics[width=1\textwidth]{Figures/importer_mapping.png}
-    \caption{Nové rozhraní pro interaktivní konfiguraci mapování sloupců}
-    \label{fig:importer_mapping}
-\end{sidewaysfigure}
+    \rotatebox{90}{%
+        \begin{minipage}[c]{\textheight}
+            \centering
+            \includegraphics[width=\textwidth]{Figures/importer_mapping.png}
+            \caption{Nové rozhraní pro interaktivní konfiguraci mapování sloupců}
+            \label{fig:importer_mapping}
+        \end{minipage}
+    }
+\end{figure}
 \clearpage
 
 \subsection{Real-time monitoring a UX prvky}

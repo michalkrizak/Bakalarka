@@ -1,23 +1,36 @@
 \chapter{Rozvoj kompetencí a chybějící znalosti}
 \label{chap:competencies}
 
-Přechod do firemního prostředí odhalil rozdíly mezi akademickými projekty a vývojem komerčního softwaru. Tato kapitola shrnuje technologie, které jsem se musel naučit "od nuly", a aspekty, které ve výuce chyběly.
+Přechod do firemního prostředí odhalil rozdíly mezi akademickými projekty a vývojem komerčního softwaru. Tato kapitola shrnuje technologie, které jsem se musel naučit samostudiem v průběhu praxe, a procesní aspekty, které ve výuce chyběly nebo byly pokryty jen povrchně.
 
 \section{Nově osvojené technologie}
+
 Největší výzvou byl vývoj moderního frontendu. Ačkoliv předmět \textit{Tvorba aplikací pro mobilní zařízení I} poskytuje základy jazyka JavaScript (Vanilla JS), pro práci na projektu Importér bylo nutné ovládnout komplexní ekosystém frameworku Angular a jazyka TypeScript.
 
-Během praxe jsem si musel samostudiem osvojit:
-\begin{itemize}
-    \item \textbf{Reaktivní programování (RxJS):} Práce s asynchronními datovými toky, pochopení konceptů \texttt{Observable}, \texttt{Subject} a operátorů jako \texttt{forkJoin} pro paralelní volání API.
-    \item \textbf{Angular architekturu:} Dependency Injection, životní cyklus komponent, routování a tvorba modulů.
-    \item \textbf{Service Fabric:} Pochopení architektury mikroslužeb na platformě Azure, což je téma, které v bakalářském studiu není do hloubky pokryto.
-\end{itemize}
+\subsection{Reaktivní programování s RxJS}
 
-\section{Chybějící znalosti ze studia}
-Z hlediska "soft-skills" a procesů mi nejvíce chyběla zkušenost s týmovým vývojem velkého rozsahu. Ve škole jsou projekty často řešeny individuálně nebo v malých týmech bez striktních procesů.
+Největším technologickým skokem bylo pochopení reaktivního programování. Koncept \texttt{Observable} — datového toku, na který se přihlásíme k odběru a reagujeme na příchozí hodnoty — byl zpočátku velmi odlišný od imperativního stylu, na který jsem byl zvyklý ze školních projektů.
 
-V praxi jsem se musel naučit:
-\begin{itemize}
-    \item \textbf{Code Review a Merge Requesty:} Proces vzájemné kontroly kódu a řešení konfliktů při slučování větví, kde na jednom projektu pracuje backendový i frontendový vývojář současně.
-    \item \textbf{Architektura mikroslužeb:} Komplexita distribuovaných systémů, kde spolu komunikuje množství nezávislých služeb, byla výrazně vyšší než u monolitických školních aplikací.
-\end{itemize}
+V praxi jsem se nejčastěji setkával s operátory jako \texttt{forkJoin} pro paralelní volání více API najednou, \texttt{switchMap} pro zrušení předchozího požadavku při rychlém přepisování vstupu a \texttt{takeUntil} pro bezpečné odhlášení od odběru při zničení komponenty. Bez jejich pochopení by kód byl buď nefunkční, nebo by docházelo k tzv. memory leakům.
+
+\subsection{Angular architektura}
+
+Angular jako framework přináší přísnou strukturu, která zpočátku působí jako zbytečná komplexita, ale při vývoji rozsáhlejšího modulu se ukázala jako velká výhoda. Musel jsem pochopit systém Dependency Injection, který řídí, jak si komponenty a služby předávají závislosti, životní cyklus komponent (hooks jako \texttt{ngOnInit}, \texttt{ngOnDestroy}) a způsob, jakým Angular detekuje změny v datech a kdy překresluje UI.
+
+Zvláštní pozornost si vyžádala strategie \textbf{OnPush}, kterou jsem musel nasadit u všech náročnějších komponent modulu Importér kvůli výkonu. Pochopení toho, kdy Angular komponentu překreslí a kdy ne, bylo klíčové pro odladění chyb, kde se UI neaktualizovalo po změně dat.
+
+\subsection{Azure Service Fabric a architektura mikroslužeb}
+
+Systém Evolio je postaven na platformě Azure Service Fabric, kde každá funkcionalita existuje jako samostatná služba (Actor nebo Service) s vlastním životním cyklem. Pro mě jako studenta zvyklého na monolitické aplikace bylo zpočátku obtížné pochopit, jak spolu tyto služby komunikují, jak se ladí chyba, která přechází přes hranice více služeb, a jak správně nastavit lokální vývojové prostředí tak, aby všechny závislosti fungovaly.
+
+\section{Chybějící procesní znalosti}
+
+Vedle technologií jsem si musel osvojit i řadu procesních dovedností, které jsou ve firemním prostředí samozřejmostí, ale ve školní výuce nejsou systematicky pokryty.
+
+\subsection{Code Review a kultura zpětné vazby}
+
+Každý kód, který jsem napsal, procházel před začleněním do hlavní větve revizí kolegy. Zpočátku bylo náročné přijímat připomínky k vlastnímu kódu a chápat je jako přirozenou součást procesu, nikoliv jako kritiku. Postupně jsem si ale zvykl na to, že code review odhaluje věci, které autor sám přehlédne, a naučil jsem se z komentářů kolegů aktivně čerpat znalosti o firemních konvencích a architektonických rozhodnutích.
+
+\subsection{Práce v rozsáhlé sdílené kódové základně}
+
+Na rozdíl od školních projektů, kde celý kód píše jeden člověk nebo malá skupina, systém Evolio tvoří stovky souborů vyvíjených souběžně více vývojáři. Naučil jsem se orientovat v cizím kódu, dohledávat kontext změn přes historii Gitu a dbát na to, aby moje změny nezasáhly do oblastí, na kterých paralelně pracuje kolega — čemuž slouží právě striktní větvení a pravidelné mergování.

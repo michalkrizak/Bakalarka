@@ -1,7 +1,7 @@
 \chapter{Automatizované testování}
 \label{chap:testing}
 
-Pro zajištění kvality a stability systému Evolio, a zejména nově vyvíjených modulů, byla v rámci praxe realizována sada automatizovaných UI testů. Tyto testy simulují reálné chování uživatele v prohlížeči a slouží jako regresní testování po nasazení nové verze aplikace.
+Pro zajištění kvality a stability systému Evolio existuje v rámci firemní infrastruktury sada automatizovaných UI testů. Tyto testy simulují reálné chování uživatele v prohlížeči a slouží jako regresní testování po nasazení nové verze aplikace. V rámci praxe jsem se do tohoto projektu zapojil — rozšiřoval jsem stávající sadu o nové testovací scénáře a průběžně pečoval o funkčnost již existujících testů.
 
 \section{Strategie a nástroje}
 
@@ -53,14 +53,13 @@ public void CreateSubject_Manually_ShouldSucceed()
 
 \section{Integrace do CI/CD (Azure DevOps)}
 
-Nedílnou součástí mé práce byla integrace těchto testů do procesu kontinuální integrace a nasazování (CI/CD) na platformě \textbf{Azure DevOps} \cite{azure_devops_docs}.
+Testovací projekt je integrován do procesu kontinuální integrace a nasazování (CI/CD) na platformě \textbf{Azure DevOps} \cite{azure_devops_docs}, kde jsem se podílel na správě buildovacích a release pipeline.
 
 \subsection{Spouštění testů}
-Vytvořil a spravoval jsem buildovací a release pipeliny, které automaticky spouští sadu testů po každém nasazení nové verze do testovacího prostředí. Testy běží na vzdáleném virtuálním stroji v prohlížeči Google Chrome.
+Testy jsou automaticky spouštěny po každém nasazení nové verze do testovacího prostředí. Běží na vzdáleném virtuálním stroji v prohlížeči Google Chrome.
 
 \begin{figure}[h]
     \centering
-    % Nezapomeň přepsat název souboru, např. na DevOpsPipeline.png
     \includegraphics[width=1\textwidth]{Figures/DevOpsPipeline.png} 
     \caption{Ukázka úspěšného běhu automatizovaných testů v release pipeline Azure DevOps}
     \label{fig:azure_devops}
