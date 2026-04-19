@@ -1,17 +1,45 @@
 \chapter{Zhodnocení výsledků a přínos praxe}
 \label{chap:evaluation}
 
-Cílem praxe bylo nejen zapojení do běžného chodu firmy, ale především dodání konkrétních softwarových řešení. Níže uvádím aktuální stav jednotlivých projektů.
+Cílem praxe bylo nejen zapojení do běžného chodu firmy, ale především dodání konkrétních softwarových řešení. Následující sekce uvádějí aktuální stav jednotlivých projektů, dosažené výstupy a kritickou reflexi vlastní práce.
 
 \section{Modul Importér}
-V době psaní této zprávy se nová webová verze Importéru nachází ve fázi \textbf{intenzivního testování}. Aplikace je plně funkční a probíhají konzultace s Team Leaderem a Product Ownerem ohledně doladění vizuálních detailů a user experience (UX).
+V době psaní této zprávy se nová webová verze Importéru nachází ve fázi \textbf{intenzivního testování}. Aplikace je plně funkční a probíhají konzultace s vedoucím týmu (\textit{team leader}) a produktovým manažerem (\textit{product owner}) ohledně doladění vizuálních detailů a uživatelského prožitku (UX).
 
 Do testování jsou zapojeni také firemní konzultanti, kteří budou systém v budoucnu nejvíce využívat. Jejich zpětná vazba slouží k identifikaci posledních nedostatků před nasazením do ostrého provozu pro všechny klienty.
 
-\section{AI Rozhraní}
-Modul AI chatu pro specifického klienta byl úspěšně dokončen, nasazen do produkčního prostředí a je klientem aktivně využíván. Řešení splnilo požadavky na analýzu dokumentů a streamovanou komunikaci, přičemž klient vyjádřil s výsledkem spokojenost.
+\paragraph{Rozsah realizace.} V rámci modulu bylo vytvořeno:
+\begin{itemize}
+    \item osm specializovaných Angular komponent (viz tabulka \ref{tab:fe_components_full}),
+    \item jeden samostatný feature modul (\texttt{ImporterModule}) s vlastním routingem a \textit{lazy loadingem},
+    \item dva C\# Add-iny zajišťující dvoufázové zpracování importu,
+    \item devět nových databázových tabulek pod schématem \texttt{importer} a několik podpůrných uložených procedur.
+\end{itemize}
+
+\paragraph{Přínos pro firmu.} Po nasazení nového modulu se očekává výrazné snížení zátěže firemních konzultantů, kteří dosud museli importy provádět za klienty, a zpřístupnění této funkce širšímu okruhu uživatelů.
+
+\section{AI rozhraní}
+Modul AI chatu byl dokončen, nasazen do produkčního prostředí a je klientem aktivně využíván, přičemž klient vyjádřil s výsledkem spokojenost. Implementace prokázala, že i zavedený informační systém postavený na starší technologii (AngularJS) lze funkčně obohatit o moderní funkce bez nutnosti kompletní migrace platformy.
 
 \section{Automatizované testy}
 Sada automatizovaných testů byla integrována do CI/CD pipeliny a spouští se s každým vydáním nové verze. Testy již prokázaly svou reálnou hodnotu při odhalování regresních chyb.
 
-Konkrétním příkladem úspěšného záchytu chyby byla situace, kdy testy odhalily nefunkčnost modálního okna pro editaci případu, pokud neobsahoval žádné subjekty. Chyba způsobovala "nekonečné načítání" a zablokování formuláře. Díky automatizaci byla tato kritická chyba zachycena ještě před nasazením k zákazníkům.
+Konkrétním příkladem úspěšného záchytu chyby byla situace, kdy testy odhalily nefunkčnost modálního okna pro editaci případu, pokud neobsahoval žádné subjekty. Chyba způsobovala permanentní stav načítání a zablokování formuláře. Díky automatizaci byla tato kritická chyba zachycena ještě před nasazením k zákazníkům.
+
+\section{Kritická sebereflexe}
+
+Ne všechno se podařilo tak, jak jsem si původně představoval. K nejvýznamnějším oblastem, kde vidím prostor pro osobní zlepšení, patří:
+\begin{itemize}
+    \item \textbf{Odhad časové náročnosti.} První úkoly v modulu Importér trvaly výrazně déle, než jsem odhadoval -- především kvůli podcenění doby potřebné na pochopení existujícího kódu a firemních konvencí. V pozdější fázi praxe se přesnost mých odhadů znatelně zlepšila.
+    \item \textbf{Pokrytí nižšími vrstvami testů.} Moje pozornost směřovala primárně k UI testům, ačkoliv by pro některé komplexní Add-in scénáře byly integrační testy efektivnější (rychlejší zpětná vazba, jednodušší diagnostika). Toto je oblast, na kterou bych v dalším období rád navázal.
+    \item \textbf{Dokumentace vlastního kódu.} Zpětně vnímám, že některé mé první implementace by zasloužily podrobnější komentáře a dokumentační bloky. V průběhu praxe jsem tento návyk postupně zapracoval.
+\end{itemize}
+
+\section{Budoucí rozvoj}
+
+V rámci Importéru plánuji ve firmě pokračovat v těchto směrech:
+\begin{itemize}
+    \item rozšíření o další entity (dokumenty, finance),
+    \item doplnění integračních testů Add-in vrstvy,
+    \item AI-asistovaný návrh mapování podle hlaviček souboru.
+\end{itemize}

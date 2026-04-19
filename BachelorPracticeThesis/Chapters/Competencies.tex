@@ -11,7 +11,7 @@ Největší výzvou byl vývoj moderního frontendu. Ačkoliv předmět \textit{
 
 Největším technologickým skokem bylo pochopení reaktivního programování. Koncept \texttt{Observable} — datového toku, na který se přihlásíme k odběru a reagujeme na příchozí hodnoty — byl zpočátku velmi odlišný od imperativního stylu, na který jsem byl zvyklý ze školních projektů.
 
-V praxi jsem se nejčastěji setkával s operátory jako \texttt{forkJoin} pro paralelní volání více API najednou, \texttt{switchMap} pro zrušení předchozího požadavku při rychlém přepisování vstupu a \texttt{takeUntil} pro bezpečné odhlášení od odběru při zničení komponenty. Bez jejich pochopení by kód byl buď nefunkční, nebo by docházelo k tzv. memory leakům.
+V praxi jsem se nejčastěji setkával s operátory jako \texttt{forkJoin} pro paralelní volání více API najednou, \texttt{switchMap} pro zrušení předchozího požadavku při rychlém přepisování vstupu a \texttt{takeUntil} pro bezpečné odhlášení od odběru při zničení komponenty. Bez jejich pochopení by kód byl buď nefunkční, nebo by docházelo k únikům paměti (tzv. \textit{memory leaks}).
 
 \subsection{Angular architektura}
 
@@ -29,7 +29,7 @@ Vedle technologií jsem si musel osvojit i řadu procesních dovedností, které
 
 \subsection{Code Review a kultura zpětné vazby}
 
-Každý kód, který jsem napsal, procházel před začleněním do hlavní větve revizí kolegy. Zpočátku bylo náročné přijímat připomínky k vlastnímu kódu a chápat je jako přirozenou součást procesu, nikoliv jako kritiku. Postupně jsem si ale zvykl na to, že code review odhaluje věci, které autor sám přehlédne, a naučil jsem se z komentářů kolegů aktivně čerpat znalosti o firemních konvencích a architektonických rozhodnutích.
+Každý kód, který jsem napsal, procházel před začleněním do hlavní větve revizí kolegy. Zpočátku bylo náročné přijímat připomínky k vlastnímu kódu a chápat je jako přirozenou součást procesu, nikoliv jako kritiku. Postupně jsem si ale zvykl na to, že code review odhaluje věci, které autor sám přehlédne, a smysl tohoto přístupu jsem ocenil velmi rychle -- naučil jsem se z komentářů kolegů aktivně čerpat znalosti o firemních konvencích a architektonických rozhodnutích.
 
 \subsection{Práce v rozsáhlé sdílené kódové základně}
 

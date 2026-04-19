@@ -6,38 +6,62 @@ Tato kapitola detailně specifikuje zadané úkoly, které byly předmětem odbo
 \section{Specifikace zadaných úkolů}
 
 \subsection{Projekt Importér}
-Hlavním úkolem praxe byl vývoj webového rozhraní pro import dat do systému Evolio. Původní řešení, realizované jako desktopová aplikace (WPF), se v průběhu času ukázalo jako uživatelsky nepřívětivé a složité na pochopení. Jeho obsluhu zvládali pouze zaškolení firemní konzultanti, což bránilo běžným uživatelům v samostatné práci.
-
-Cílem nového řešení (Single Page Application v Angularu) bylo vytvořit intuitivní nástroj, který umožní každému uživateli bez problémů importovat data samostatně. Jednalo se o vývoj zcela nové komponenty bez návaznosti na existující frontendový kód.
+Hlavním úkolem praxe byl vývoj nového webového rozhraní pro import dat do systému Evolio jako náhrady stávající desktopové aplikace (motivace a srovnání s původním řešením jsou podrobně rozebrány v kapitole \ref{chap:importer_implementation}). Jednalo se o vývoj zcela nové komponenty bez návaznosti na existující frontendový kód.
 
 \textbf{Klíčové požadavky:}
 \begin{itemize}
-    \item \textbf{Intuitivní UX/UI:} Důraz na jednoduchost, aby uživatelé mohli sami importovat entity jako jsou advokátní a realitní spisy, pohledávky, subjekty, platby a finanční položky.
-    \item \textbf{Implementace designu:} Kódování aplikace podle dodaných grafických návrhů s možností vlastních vylepšení (např. implementace skeleton loadingů pro lepší odezvu aplikace).
-    \item \textbf{Backend a Databáze:} Spolupráce na návrhu databázových struktur a vývoj C\# doplňku (Add-in) pro zpracování dat.
+    \item \textbf{Intuitivní UX/UI:} Důraz na jednoduchost, aby uživatelé mohli sami importovat entity jako advokátní a realitní spisy, pohledávky, subjekty, platby a finanční položky.
+    \item \textbf{Implementace designu:} Kódování aplikace podle dodaných grafických návrhů s možností vlastních vylepšení.
+    \item \textbf{Backend a databáze:} Spolupráce na návrhu databázových struktur a vývoj C\# doplňku (Add-in) pro zpracování dat.
 \end{itemize}
 
 \subsection{Vývoj AI rozhraní a řešení FE issues}
-Druhou oblastí byla práce na stávajícím frontendu systému Evolio. Nejvýznamnějším úkolem v této části byla implementace uživatelského rozhraní pro AI asistenta.
+Druhou oblastí byla práce na stávajícím frontendu systému Evolio. Nejvýznamnějším úkolem v této části byla implementace uživatelského rozhraní pro AI asistenta pro klienta z právního sektoru. Konkrétně šlo o vývoj chatovacího okna s výběrem jazykového modelu, podporou analýzy nahraných dokumentů a streamovaným zobrazením odpovědi v reálném čase. Technické detaily tohoto řešení jsou rozebrány v kapitole \ref{chap:fe_issues_ai}.
 
-\textbf{Specifika AI modulu:}
-\begin{itemize}
-    \item Vývoj frontendu pro chatovací okno s podporou výběru jazykového modelu.
-    \item Komunikace s backendem prostřednictvím REST API a \textbf{Notification Hubu} pro real-time streamování odpovědí od AI.
-    \item Implementace funkce pro nahrávání a analýzu dokumentů, což byla klíčová funkce vyžadovaná klienty pro právní analýzy.
-\end{itemize}
-
-Kromě toho jsem se podílel na řešení běžných chyb (bugfixů) a drobných úprav v systému dle požadavků klientů.
+Kromě toho jsem se podílel na řešení běžných chyb a drobných úprav v systému dle požadavků klientů.
 
 \subsection{Automatizované testování}
-Třetím pilířem praxe byla tvorba automatizovaných testů pomocí frameworku \textbf{Selenium}. Cílem bylo zajistit stabilitu klíčových částí systému Evolio. Testy pokrývají základní CRUD operace (Create, Read, Update, Delete) například pro moduly:
-\begin{itemize}
-    \item Podatelna,
-    \item Fakturace,
-    \item Správa případů a spisů,
-    \item Evidence subjektů a plateb.
-\end{itemize}
+Třetím pilířem praxe byla tvorba automatizovaných testů pokrývajících klíčové agendy systému Evolio (Podatelna, Fakturace, Správa případů a spisů, Evidence subjektů a plateb). Úkolem bylo rozšiřovat stávající sadu o nové scénáře a udržovat její stabilitu v rámci CI/CD procesu. Metodika, volba nástrojů a architektura testovacího projektu jsou popsány v kapitole \ref{chap:testing}.
 
+\section{Analýza požadavků modulu Importér}
+\label{sec:requirements}
+
+Pro přehlednost jsou níže uvedeny funkční a nefunkční požadavky formulované na základě konzultací s produktovým manažerem a firemními konzultanty. Tento přehled sloužil jako vstup pro návrh datového modelu i uživatelského rozhraní. Funkční požadavky popisující chování systému z pohledu uživatele shrnuje tabulka \ref{tab:functional_requirements}, nefunkční požadavky týkající se kvality a omezení řešení pak tabulka \ref{tab:nonfunctional_requirements}.
+
+\begin{table}[!htbp]
+\centering
+\caption{Funkční požadavky modulu Importér}
+\label{tab:functional_requirements}
+\begin{tabular}{|l|p{3.3cm}|p{7.2cm}|}
+\hline
+\textbf{ID} & \textbf{Název} & \textbf{Popis} \\ \hline
+FR-01 & Nahrání souboru & Uživatel může nahrát vstupní soubor ve formátu Excel (XLSX) nebo CSV. \\ \hline
+FR-02 & Definice šablony & Uživatel může vytvořit, upravit nebo smazat šablonu importu s uloženým mapováním sloupců. \\ \hline
+FR-03 & Mapování sloupců & Systém umožňuje přiřadit sloupce vstupního souboru na pole importovaného kontextu (např. Subjekt, Adresa). \\ \hline
+FR-04 & Hierarchie kontextů & Uživatel může definovat vnořené kontexty (Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontakt) a více instancí téhož kontextu. \\ \hline
+FR-05 & Transformace hodnot & Systém podporuje definici převodních pravidel pro textové hodnoty na interní identifikátory. \\ \hline
+FR-06 & Dvoufázový import & Systém provádí nejdříve validační (přípravnou) fázi a teprve po potvrzení uživatele ostrý zápis dat. \\ \hline
+FR-07 & Real-time sledování & Uživatel je informován o průběhu zpracování jednotlivých řádků v reálném čase. \\ \hline
+FR-08 & Auditování a logy & Každý import je uložen včetně výsledku jednotlivých řádků pro pozdější dohledání chyb. \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Nefunkční požadavky modulu Importér}
+\label{tab:nonfunctional_requirements}
+\begin{tabular}{|l|p{3.3cm}|p{7.2cm}|}
+\hline
+\textbf{ID} & \textbf{Kategorie} & \textbf{Popis} \\ \hline
+NFR-01 & Výkon & Vykreslení mapovací obrazovky se stromem do 50 kontextů musí proběhnout bez zaznamenatelné latence (pod 200 ms). \\ \hline
+NFR-02 & Škálovatelnost & Systém musí zpracovat soubory obsahující řádově tisíce řádků bez blokace uživatelského rozhraní. \\ \hline
+NFR-03 & Bezpečnost & Přístup k modulu je omezen rolovým oprávněním systému Evolio; data v tranzitu jsou chráněna protokolem HTTPS. \\ \hline
+NFR-04 & Konzistence dat & Souběžné zápisy jsou ošetřeny pomocí optimistického řízení souběhu (\texttt{SysRowVersion}). \\ \hline
+NFR-05 & Rozšiřitelnost & Definice nových typů importu je možná bez zásahu do zkompilovaného kódu (pouze přes databázovou konfiguraci). \\ \hline
+NFR-06 & Použitelnost & Běžný uživatel (klient) musí být schopen provést import bez asistence firemního konzultanta. \\ \hline
+NFR-07 & Auditovatelnost & Každá operace zápisu zaznamenává identifikátor autora a časovou značku. \\ \hline
+\end{tabular}
+\end{table}
 \section{Časový plán a náročnost}
 
 Odborná praxe byla zahájena v srpnu 2025 a probíhá kontinuálně až do současnosti. Práce na jednotlivých úkolech neprobíhala striktně lineárně, ale prolínala se podle aktuálních priorit vývojového týmu.

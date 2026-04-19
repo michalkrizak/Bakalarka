@@ -9,36 +9,60 @@
 \usepackage{float}
 \usepackage{rotating}
 \usepackage{pdfpages}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
+\usepackage{pgfgantt}
+\usepackage{multirow}
+\raggedbottom
 
 \renewcommand{\lstlistlistingname}{Seznam použitých kódů}
+
+% Definice jazyka JavaScript/TypeScript pro balik listings
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, switch, var, let, const,
+            if, in, while, do, else, case, break, for, class, extends, import, export,
+            from, async, await, this, super, static, public, private, protected, readonly,
+            interface, type, implements, enum, signal, computed, effect},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={Component, Injectable, Input, Output, ViewChild, NgModule, Pipe, Directive},
+  ndkeywordstyle=\color{purple}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
 
 % Zadame pozadovane vstupy pro generovani titulnich stran.
 \ThesisAuthor{Michal Křižák}
 
 \ThesisSupervisor{Ing. Gaura Jan, Ph.D.}
 
-\CzechThesisTitle{Ukázka sazby kvalifikační práce}
+\CzechThesisTitle{Webová modernizace modulu Importér v informačním systému Evolio}
 
-\EnglishThesisTitle{Diploma Thesis Typesetting Demo}
+\EnglishThesisTitle{Web-based Modernization of the Importer Module in the Evolio Information System}
 
 \SubmissionYear{2026}
 
 \ThesisAssignmentFileName{ThesisSpecification_KRI0375.pdf}
 
 % Pokud nechceme nikomu dekovat makro zapoznamkujeme.
-\Acknowledgement{Rád bych na tomto místě poděkoval vedoucímu práce, panu Ing. Janu Gaurovi, Ph.D., za odborné vedení a cenné rady. Velké poděkování patří také společnosti AveSoft s.r.o. za možnost absolvovat odbornou praxi, a především mým kolegům z vývojového týmu za vstřícný přístup, trpělivost a odbornou pomoc při řešení zadaných úkolů.}
+\Acknowledgement{Rád bych na tomto místě poděkoval vedoucímu práce, panu Ing. Janu Gaurovi, Ph.D., za odborné vedení a cenné rady. Velké poděkování patří také společnosti AVE soft s.r.o. za možnost absolvovat odbornou praxi, a především mým kolegům z vývojového týmu za vstřícný přístup, trpělivost a odbornou pomoc při řešení zadaných úkolů.}
 
-\CzechAbstract{Tato zpráva shrnuje průběh individuální odborné praxe vykonané ve společnosti AveSoft. Hlavní náplní praxe byl vývoj a modernizace modulu Evolio – Importér, který slouží pro hromadný import dat do informačního systému. Cílem bylo nahradit stávající desktopové řešení (WPF) novou webovou Single Page Aplikací (SPA).
+\CzechAbstract{Tato zpráva shrnuje průběh individuální odborné praxe vykonané ve společnosti AVE soft s.r.o. Hlavní náplní praxe byl vývoj a modernizace modulu Evolio – Importér, který slouží pro hromadný import dat do informačního systému. Cílem bylo nahradit stávající desktopové řešení (WPF) novou webovou Single Page Aplikací (SPA).
 
 Práce se zaměřuje na implementaci uživatelského rozhraní v technologii Angular, které umožňuje uživatelům definovat šablony importů a mapovat sloupce z Excel souborů. Dále popisuje vývoj backendové logiky ve formě C\# doplňku (Add-in) pro samotné zpracování dat a spolupráci na návrhu databázové struktury. Součástí praxe byla také tvorba automatizovaných testů a řešení dalších úloh v rámci firemního vývojového cyklu.}
 
-\CzechKeywords{Odborná praxe; AveSoft; IS Evolio; Angular; TypeScript; C\#; SQL; automatizované testy; migrace software; webová aplikace}
+\CzechKeywords{Odborná praxe; AVE soft; IS Evolio; Angular; TypeScript; C\#; SQL; automatizované testy; migrace software; webová aplikace}
 
-\EnglishAbstract{This report summarizes the individual professional practice performed at AveSoft company. The main focus of the practice was the development and modernization of the "Evolio – Importer" module, designed for bulk data import into the information system. The goal was to replace the existing desktop solution (WPF) with a new web-based Single Page Application (SPA).
+\EnglishAbstract{This report summarizes the individual professional practice performed at AVE soft s.r.o. company. The main focus of the practice was the development and modernization of the "Evolio – Importer" module, designed for bulk data import into the information system. The goal was to replace the existing desktop solution (WPF) with a new web-based Single Page Application (SPA).
 
 The thesis focuses on the implementation of the user interface using Angular technology, enabling users to define import templates and map columns from Excel files. It further describes the development of backend logic in the form of a C\# Add-in for data processing and collaboration on the database structure design. The practice also included creating automated tests and solving other tasks within the company's development cycle.}
 
-\EnglishKeywords{Professional practice; AveSoft; IS Evolio; Angular; TypeScript; C\#; SQL; automated tests; software migration; web application}
+\EnglishKeywords{Professional practice; AVE soft; IS Evolio; Angular; TypeScript; C\#; SQL; automated tests; software migration; web application}
 
 % ... tvoje stávající zkratky ...
 \AddAcronym{IS}{Informační systém}
@@ -95,7 +119,7 @@ The thesis focuses on the implementation of the user interface using Angular tec
 \clearpage
 
 % A nasleduje text zaverecne prace.
-%\input{Chapters/Introduction.tex}
+\input{Chapters/Introduction.tex}
 \input{Chapters/CompanyProfile.tex}
 \input{Chapters/AssignmentAndSchedule.tex}
 \input{Chapters/ImporterImplementation.tex}

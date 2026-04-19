@@ -14,10 +14,6 @@ Model dat se skládá ze tří logických celků:
     \item \textbf{Provozní data:} Logování průběhu importu a auditní stopy.
 \end{enumerate}
 
-\subsection{Klíčové entity a vztahy}
-
-Základním stavebním kamenem je tabulka \texttt{CTypy}, která slouží jako kořenový číselník pro logickou separaci dat. Na ni navazuje hierarchická struktura definovaná v tabulce \texttt{Kontext}. Významným prvkem návrhu je rekurzivní vazba v tabulce \texttt{Kontext} přes sloupec \texttt{IdKontextNadrizeny}, což umožňuje modelovat vnořené objekty (např. Subjekt $\rightarrow$ Adresa $\rightarrow$ Kontakt).
-
 \begin{figure}[p]
     \vspace*{\fill}
     \centering
@@ -148,7 +144,7 @@ Prezentační vrstva modulu Importér představuje nejrozsáhlejší část real
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{Figures/importer_dashboard.png}
-    \caption{Dashboard nového modulu Importér se seznamem náhledem dokumentu a výběrem šablony}
+    \caption{Dashboard nového modulu Importér s náhledem dokumentu a výběrem šablony}
     \label{fig:importer_dashboard}
 \end{figure}
 
@@ -186,7 +182,7 @@ Modul sestává z osmi specializovaných komponent, které spolupracují na zaji
 Aplikace využívá kombinaci tradiční knihovny RxJS \cite{rxjs_docs} a nového reaktivního primitiva \textbf{Signals}, představeného v Angularu 17. Signály jsou použity pro správu synchronního stavu, který nevyžaduje komplexní transformace, což zjednodušuje kód a zvyšuje čitelnost.
 
 V rámci \texttt{ImporterService} jsou signály využity pro sledování aktuálního kontextu:
-\begin{lstlisting}[language=Java, caption={Využití signálů pro správu stavu modulu}]
+\begin{lstlisting}[language=JavaScript, caption={Využití signálů pro správu stavu modulu}]
 // Definice signálu pro sledování vybrané šablony
 public selectedSablonaId = signal<number | null>(null);
 
@@ -196,7 +192,7 @@ public isSablonaSelected = computed(() => this.selectedSablonaId() !== null);
 
 Pro asynchronní operace, jako je paralelní načítání číselníků při inicializaci, je nadále využíváno RxJS. Operátor \texttt{forkJoin} zajišťuje, že se aplikace vykreslí až v momentě, kdy jsou k dispozici všechna potřebná metadata:
 
-\begin{lstlisting}[language=Java, caption={Paralelní inicializace dat pomocí forkJoin}]
+\begin{lstlisting}[language=JavaScript, caption={Paralelní inicializace dat pomocí forkJoin}]
 forkJoin({
   typy: this.emap.get('cTypy', { IdTyp: this.idTyp() }),
   kontexty: this.emap.get('kontext', { IdTyp: this.idTyp() }),
@@ -212,7 +208,7 @@ Z důvodu vysokých nároků na výkon při zobrazování rozsáhlých mapovací
 
 Tato optimalizace instruuje Angular, aby kontroloval změny v komponentě pouze v případě, že se změní její vstupní reference (\texttt{@Input}) nebo je změna explicitně vyžádána. Tím se výrazně redukuje počet cyklů detekce změn při interakci uživatele s formulářem.
 
-\begin{lstlisting}[language=Java, caption={Definice komponenty s OnPush strategií}]
+\begin{lstlisting}[language=JavaScript, caption={Definice komponenty s OnPush strategií}]
 @Component({
   selector: 'ev-importer-mapping',
   templateUrl: './importer-mapping.component.html',
@@ -224,7 +220,7 @@ export class ImporterMappingComponent { ... }
 
 \subsection{Implementace komplexní mapovací logiky}
 
-Jádrem modulu je \texttt{ImporterMappingComponent} (viz Obrázek \ref{fig:importer_mapping}), která umožňuje uživateli interaktivně sestavit strukturu importu. Na rozdíl od původního desktopového řešení se zde uplatňuje princip \textit{on-demand} budování struktury:
+Jádrem modulu je \texttt{ImporterMappingComponent} (viz Obrázek \ref{fig:importer_mapping}), která umožňuje uživateli interaktivně sestavit strukturu importu. Na rozdíl od původního desktopového řešení se zde uplatňuje princip budování struktury na vyžádání (\textit{on-demand}):
 
 \begin{itemize}
     \item \textbf{Dynamické instance:} Uživatel může přidávat více instancí stejného kontextu (např. více adres k jednomu subjektu). Každá instance má vlastní stav mapování sloupců.
@@ -253,7 +249,7 @@ Proces importu probíhá sekvenčně, přičemž uživatel je o postupu informov
 \begin{itemize}
     \item \textbf{Sledování času:} Využití knihovny \textit{moment.js} v sekundovém intervalu pro zobrazení doby trvání importu.
     \item \textbf{Inkrementální DataGrid:} Výsledky jsou do tabulky (\textit{DevExtreme DataGrid}) přidávány okamžitě po dokončení požadavku na konkrétní řádek.
-    \item \textbf{Vizuální indikátory:} Namísto statických spinnerů jsou v dashboardu využity \textbf{skeleton loadingy}, které predikují strukturu obsahu a snižují kognitivní zátěž uživatele při čekání na data.
+    \item \textbf{Vizuální indikátory:} Namísto statických spinnerů jsou v dashboardu využity tzv. \textit{skeleton loadery} -- zástupné vizuální placeholdery, které predikují strukturu obsahu a snižují kognitivní zátěž uživatele při čekání na data.
 \end{itemize}
 
 \begin{figure}[H]
